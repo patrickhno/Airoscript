@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1516/branch/airoscript/src/patches
+END
+debian.conf.patch
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1516/branch/airoscript/src/patches/debian.conf.patch
+END
+wifislax.conf.patch
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1516/branch/airoscript/src/patches/wifislax.conf.patch
+END
+debian-package.conf.patch
+K 25
+svn:wc:ra_dav:version-url
+V 74
+/svn/!svn/ver/1516/branch/airoscript/src/patches/debian-package.conf.patch
+END

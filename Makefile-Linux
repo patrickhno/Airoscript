@@ -1,0 +1,148 @@
+#!/usr/bin/make
+NAME="airoscript"
+
+# Binary install programs
+INSTALL = install -c
+INSTALLDATA = install -c -m 644
+
+# Destdirs. 
+	# prefixes
+data=$(prefix)/share
+
+	# main
+bindir=$(prefix)/sbin/
+datadir=$(data)/$(NAME)/
+docdir=$(data)/doc/$(NAME)
+etcdir=$(prefix)/etc
+locale=$(data)/locale
+mandir=$(data)/man
+srcdir=./src
+
+# Manpages
+
+###############################################################################
+#		                    install                                   #
+###############################################################################
+
+install: installdirs\
+	 install-airoscript install-themes \
+	 install-tools \
+	 install-locale \
+	 install-docs \
+	 post-install
+
+installdirs:
+	@$(SHELL) $(srcdir)/mkinstalldirs $(bindir) $(datadir) \
+        			$(docdir)/html/images $(etcdir) \
+                                $(mandir)/man1 $(locale) \
+				$(datadir)/themes \
+				$(datadir)/airosperl \
+				$(docdir)/tools
+	
+install-airoscript:
+	@echo "Installing airoscript"
+	@$(INSTALL) $(srcdir)/airoscript.sh $(bindir)/airoscript
+	@$(INSTALL) $(srcdir)/conffiles/airoscript.conf $(etcdir)
+	@$(INSTALL) $(srcdir)/functions/*func* $(datadir)
+	@$(INSTALLDATA) $(srcdir)/conffiles/screenrc $(etcdir)
+
+
+install-themes:
+	@echo "Installing themes"
+	@$(INSTALLDATA) $(srcdir)/themes/*.theme $(datadir)/themes
+
+install-tools:
+	@# Commented thigs because airosperl is not yet ready.
+	@echo "Installing tools:"
+	@# Binary files
+	@#echo -e "\t airosconf"
+	@#$(INSTALL) $(srcdir)/tools/airosconf.sh $(bindir)/airosconf
+	@echo -e "\t airoscwordlist"
+	@$(INSTALL) $(srcdir)/tools/airoscwordlist.pl $(bindir)/airoscwordlist
+	@echo -e "\t airopdate"
+	@$(INSTALL) $(srcdir)/tools/airopdate.sh $(bindir)/airopdate
+	@#echo -e "\t airosperl"
+	@#$(INSTALL) $(srcdir)/tools/airosperl/airosperl.pl\
+	 #$(bindir)/airosperl.pl
+	@# Data files.
+	@#$(INSTALLDATA) $(srcdir)/conffiles/airosperl.conf $(etcdir)
+	@#$(INSTALLDATA) $(srcdir)/tools/airosperl/airosperl.glade $(datadir)
+	@# Airosperl configuration
+	@#$(SHELL) $(srcdir)/tools/airosconf.sh --set --to-airosperl apppath\
+	 #"$(datadir)" --force-yes
+
+post-install:
+	@if [ "$(aircrack_prefix)" != "" ]; then sed -i 's/AIRPREFIX=\"\/usr\/local\"/AIRPREFIX=\"$(aircrack_prefix)\"/' $(etcdir)/airoscript.conf;fi
+
+install-docs: install-main-docs install-manpages
+
+install-main-docs:
+	@ echo "Installing documentation"
+	@ echo -e "\t Installing standard documentation"
+	@ for i in doc/* ; do if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then make -s -C $$i docdir="$(docdir)" INSTALLDATA="$(INSTALLDATA)" ; else $(INSTALLDATA) $$i $(docdir) ;fi ; done
+
+install-manpages: 
+	@# This will install any manpage on manpages dir. (Just man1 manpages)
+	@ echo -e "\t Installing manpages"
+	@for i in $(srcdir)/manpages/*.1 ; do $(INSTALLDATA) $$i $(mandir)/man1/ ; done
+
+###############################################################################
+#		                    locale                                   #
+###############################################################################
+generate-locale:
+	@ echo "Installing locales"
+	@for i in $(srcdir)/locale/* ; do \
+		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
+			make -s -C $$i &> /dev/null ; \
+		fi ; \
+	done
+
+ 
+install-locale: generate-locale
+	@for i in $(srcdir)/locale/* ; do \
+		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
+			make -s -C $$i install locale="$(locale)" INSTALLDATA="$(INSTALLDATA)" &>/dev/null ; \
+		fi ; \
+	done
+
+###############################################################################
+#		                    uninstall                                 #
+###############################################################################
+
+uninstall: uninstall-binary uninstall-data uninstall-docs uninstall-locale
+	@echo "Uninstalled succesfully"
+
+uninstall-binary:
+	@rm  $(bindir)/airoscript
+	@rm $(bindir)/airopdate
+
+uninstall-data: uninstall-locale
+	@rm $(etcdir)/airosperl.conf $(sysconfdir)/airoscript.conf
+	@rm -r $(datadir)
+
+uninstall-docs:
+	@rm -r $(docdir)
+
+uninstall-locale:
+	@for i in $(srcdir)/locale/* ; do \
+		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
+			make -s -C $$i uninstall locale=$(locale) ; \
+		fi ; \
+	done
+	
+
+###############################################################################
+#		                    Patch                                 #
+###############################################################################
+
+slackware: install
+	@echo "Applying wifi(way/slax) patch"
+	@patch $(DESTDIR)/$(etcdir)/airoscript.conf \
+	$(CURDIR)/src/patches/wifislax.conf.patch
+
+debian:
+	@make -f Makefile-Linux aircrack_prefix="/usr"
+
+all: install 
+
+.PHONY: all install uninstall slackware debian-package airosperl locale manpages
