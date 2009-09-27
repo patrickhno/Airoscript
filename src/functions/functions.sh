@@ -1585,7 +1585,7 @@ function setinterface {
 				TYPE=`echo \"$AIROUTPUT\"  | grep monitor | awk '{print $2 $3}'`
 				DRIVER=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $4}'`
 				wifi=`echo \"$AIROUTPUT\"|awk {'print $NF'}|cut -d ")" -f1`
-				if [ "$wifi" != "" ] ; then WIFI=$wifi; fi
+				if [ "$wifi" != "" ] ; then WIFI=$wifi; fi # FIXME seems to not work on some iwl intefaces.
 			else
 				AIROUTPUT=`$AIRMON stop $WIFICARD`;
 				TYPE=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $2 $3}'`
@@ -1621,11 +1621,13 @@ function setinterface {
 			if [ "$answer" != "n" ]
 			then
 				TYPE=`$AIRMON start $WIFICARD | grep monitor | awk '{print $2 $3}'`
-				DRIVER=`$AIRMON start $WIFICARD | grep monitor | awk '{print $2 $3}'`
-
+				# DRIVER=`$AIRMON start $WIFICARD | grep monitor | awk '{print $2 $3}'`
+                # WTF? Driver and type where the same
+                DRIVER="$TYPE"
 			else
 				TYPE=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $2 $3}'`
-				DRIVER=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $2 $3}'`
+				#DRIVER=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $2 $3}'`
+                DRIVER="$TYPE"
 			fi
 
 		$CLEAR
