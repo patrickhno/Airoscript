@@ -1568,13 +1568,13 @@ function setinterface {
 	then
 		echo -e "\n_____"`gettext 'Interface selection'`"_____"
 		PS3="`gettext 'Select your interface: '`"
-		
+
 		select WIFI in $INTERFACES; do
 			break;
 		done
-		
+
 		export WIFICARD=$WIFI
-			
+
 		echo -e "______________________________\n"
 
 		echo -n `gettext 'Should I put it in monitor mode?'` " (Y/n) "
@@ -1585,7 +1585,7 @@ function setinterface {
 				TYPE=`echo \"$AIROUTPUT\"  | grep monitor | awk '{print $2 $3}'`
 				DRIVER=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $4}'`
 				wifi=`echo \"$AIROUTPUT\"|awk {'print $NF'}|cut -d ")" -f1`
-				if [ "$wifi" != "" ] ; then WIFI=$wifi; fi # FIXME seems to not work on some iwl intefaces.
+                if [ "$wifi" =~ (.*)[0-9] ]; then WIFI=$wifi; fi
 			else
 				AIROUTPUT=`$AIRMON stop $WIFICARD`;
 				TYPE=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $2 $3}'`

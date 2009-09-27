@@ -109,7 +109,7 @@ install-locale: generate-locale
 #		                    uninstall                                 #
 ###############################################################################
 
-uninstall: uninstall-binary uninstall-data uninstall-docs uninstall-locale
+uninstall: uninstall-manpages uninstall-binary uninstall-data uninstall-docs uninstall-locale
 	@echo "Uninstalled succesfully"
 
 uninstall-binary:
@@ -122,6 +122,9 @@ uninstall-data: uninstall-locale
 
 uninstall-docs:
 	@rm -r $(docdir)
+
+uninstall-manpages:
+	@for i in $(srcdir)/manpages/*.1 ; do $(INSTALLDATA) $$i $(mandir)/man1/ ; done
 
 uninstall-locale:
 	@for i in $(srcdir)/locale/* ; do \
