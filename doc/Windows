@@ -1,21 +1,22 @@
 First, we'll install cygwin and some dependency:
-bash 
-xterm
-xorg-server
-ncurses
-x-start-menu-icons
-xedit (optional)
-tar (optional)
+    bash 
+    xterm
+    xorg-server
+    ncurses
+    x-start-menu-icons
+    xedit (optional)
+    tar (optional)
 
 Now, we install aircrack-ng in cygwin's bin directory. (Just copy the .exe and airmon-ng there)
 Now we'll install airoscript:
-[code]
-CD_TO_DIR_WHERE_AIROSCRIPT_TARBALL_IS_UNCOMPRESSED --> just if you don't have installed tar, otherwise, uncompress airoscript with tar -xvf
-make
-[/code]
+
+::
+
+    make
+
+
 :-D Just that.
-Ok, note for cd_to_blah... /cygdrives/ is 'windows letter units mountpoint'
-Now, we configure aiorscript for using airserv-ng (put WIFI=localhost:666) editing it with xedit (that's because I told to install xedit)
+Now, we configure aiorscript for using airserv-ng (put WIFI=localhost:666) editing it with xedit (that's because I told to install xedit, but you can use others)
 
 Now we start X server from start menu
 Start airserv-ng with commview library for inyection (if supported, note this won't work on most systems)(Even aircrack-ng won't work on some systems/wifi cards)

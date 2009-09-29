@@ -1,27 +1,57 @@
 REQUIREMENTS
-- GNU gettext (Debian/Ubuntu: gettext package)
-- ip (Debian/Ubuntu: iproute package)
-- aircrack-ng 1.0 rc2
-- WORKING injection capable driver for the interface you want to use
+============
+
+    - GNU gettext (gettext package)
+    - ip (iproute package)
+    - aircrack-ng (same version as airoscript-ng)
+    - *Working* injection capable driver for the interface you want to use
+
+    Build-deps: gettext
+    Deps:   Terminal emulator (mrxvt, xterm...) -> Preferibly xterm
+		Aircrack-ng > 1.0.2
+		Bash
+		wlandecrypter (optional)
+		jazzteldecrypter (optional)
+		mdk (optional)
+		GNU Tools like grep awk...
+		macchanger (optional, highly recommended)
 
 COMPILING:
-To install just type "make" in main dir, as root. 
-Airoscript is a bash script, so it hasn't got to be compiled, anyway, it has a build dep: gettext.
-Airosperl (Airoscript gui) is a perl script, so, it hasnt got to be compiled neither.
+==========
 
-NEW FEATURES
-Airoscript is fully i10n (currently translated to spanish), configurable , themable and modular. 
+    You have to identify where your aircrack-ng installation is.
+    It can be on /usr or on /usr/local
+        Hint: packages are usually in /usr, if you installed
+        it manually it should be in /usr/local
 
-PATCHES
-If you are running a supported non-standard distro (like wifislax) you should try executing:
-make wifislax
-that will patch /etc/airoscript.conf with a default config that will work for you.
+    If you're on debian or slackware you can just exec
+
+    ::
+
+        make [debian/slackware]
+
+    You can specify the paths for aircrack-ng if you need so, just do:
+
+    ::
+
+        make aircrack_prefix="\/foo\/bar"
+    
+    Don't forget to scape (\) the slashes, like in the example.
+
+
+FEATURES
+========
+
+    Airoscript is fully i10n (currently translated to spanish), configurable,
+    themable and modular. 
+
 
 DEBIAN:
-There is a file regarding debian packaging, if you're going to package airoscript for debian.
-For normal installations where aircrack-ng is installed by debian package you should use "make debian".
+    There is a file regarding debian packaging, if you're going to package 
+    airoscript for debian.
 
 PROBLEMS:
-If your system has not aircrack-ng or xterm installed in /usr/bin you should change that paths. 
-If something fails when trying to use dhcp, check that you have dhclient installed, if not, just change $DHCPSOFT var on config file for your dhcp client software.
+    If something fails when trying to use dhcp, check that you have dhclient
+    installed, if not, just change $DHCPSOFT var on config file for your dhcp
+    client software.
 
