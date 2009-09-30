@@ -24,12 +24,6 @@ COMPILING:
         Hint: packages are usually in /usr, if you installed
         it manually it should be in /usr/local
 
-    If you're on debian or slackware you can just exec
-
-    ::
-
-        make [debian/slackware]
-
     You can specify the paths for aircrack-ng if you need so, just do:
 
     ::
@@ -38,6 +32,8 @@ COMPILING:
     
     Don't forget to scape (\) the slashes, like in the example.
 
+    Note: On slackware you'll need dhclient or config airoscript 
+          to use dhcpdb instead
 
 FEATURES
 ========
@@ -46,12 +42,15 @@ FEATURES
     themable and modular. 
 
 
-DEBIAN:
+DEBIAN
+=======
     There is a file regarding debian packaging, if you're going to package 
     airoscript for debian.
 
-PROBLEMS:
+PROBLEMS
+========
     If something fails when trying to use dhcp, check that you have dhclient
-    installed, if not, just change $DHCPSOFT var on config file for your dhcp
-    client software.
+    installed, if dhclient is not your client, just change $DHCPSOFT var on 
+    config file for your dhcp client software.
+
 

@@ -1,6 +1,6 @@
 all: install
 install:
-	@echo -e "\t Installing html documentation"
+	@echo "\t Installing html documentation"
 	@$(INSTALLDATA) *.html $(docdir)/html
 	@$(INSTALLDATA) images/* $(docdir)/html/images/
 

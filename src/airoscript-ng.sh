@@ -1,5 +1,5 @@
 #! /bin/bash
-# Program:	Airoscript                                                          
+# Program:	airoscript-ng                                                          
 # Authors:	Base Code by Daouid; Mods & Tweaks by CurioCT and others; Continued by XayOn.
 # Credits:      Hirte, Befa, Stouf, Mister_X, ASPj , Andrea, Pilotsnipes, darkAudax, Atheros support thx to green-freq
 # Date of this version:	        27.11.2008
@@ -32,16 +32,16 @@ This may be harmfull, for example, if your user have been
 compromised, and youre getting rights trought sudo, someone
 can modify your config file to do something malicious as 
 root. Be sure to check your home config file before using it. 
-Defaults on /etc/airoscript.conf should be ok so you can 
-safely remove your ~/.airoscript.conf\n\n
+Defaults on /etc/airoscript-ng.conf should be ok so you can 
+safely remove your ~/.airoscript-ng.conf\n\n
 Do you really want to do it (yes/No): '`"
 }
 
 # Die if no root.
-li=`tput lines`; cen=`expr $li / 2 + 2`; if [ "$UID" != 0 ]; then clear;echo -e "\E[3;22H===Airoscript===\E[$cen;15H\E[31mYou Must be root to use airoscript\E[39;49;00m\E[$li;20H"; exit 1; fi; 
+li=`tput lines`; cen=`expr $li / 2 + 2`; if [ "$UID" != 0 ]; then clear;echo -e "\E[3;22H===airoscript-ng===\E[$cen;15H\E[31mYou Must be root to use airoscript\E[39;49;00m\E[$li;20H"; exit 1; fi; 
 
 # Get config.
-if [ -e ~/.airoscript/airoscript.conf ];
+if [ -e ~/.airoscript-ng/airoscript-ng.conf ];
 	then 	
 		if [ $HOME != "/root" ]
 		then
@@ -49,29 +49,29 @@ if [ -e ~/.airoscript/airoscript.conf ];
 			read response
 			if [ "$response" = "yes" ]
 				then
-					. ~/.airoscript/airoscript.conf
+					. ~/.airoscript-ng/airoscript-ng.conf
 				else
-					echo `gettext "Ok, please remove/rename your $HOME/.airoscript/airoscript.conf"`
+					echo `gettext "Ok, please remove/rename your $HOME/.airoscript-ng/airoscript-ng.conf"`
 					exit
 			fi
 		else
-			. ~/.airoscript/airoscript.conf
+			. ~/.airoscript-ng/airoscript-ng.conf
 		fi
 	else
-		if [ -e /etc/airoscript.conf ]; then
-			. /etc/airoscript.conf
+		if [ -e /etc/airoscript-ng.conf ]; then
+			. /etc/airoscript-ng.conf
 		else
-			if [ -e /usr/local/etc/airoscript.conf ]; then
-				. /usr/local/etc/airoscript.conf
+			if [ -e /usr/local/etc/airoscript-ng.conf ]; then
+				. /usr/local/etc/airoscript-ng.conf
 			else
-				if [ -e airoscript.conf ]; then
+				if [ -e airoscript-ng.conf ]; then
 					confwarn
 					read response
 					if [ "$response" = "yes" ]
 					then
-						. airoscript.conf
+						. airoscript-ng.conf
 					else
-						echo -e `gettext "Ok, please remove/rename your $HOME/.airoscript.conf"`
+						echo -e `gettext "Ok, please remove/rename your $HOME/.airoscript-ng.conf"`
 						exit
 					fi
 				else
@@ -84,7 +84,7 @@ fi
 if [ $DEBUG ]; then echo "Text domain dir is $TEXTDOMAINDIR and textdomain is $TEXTDOMAIN" ;fi
 cd $DUMP_PATH
 
-if [ $SHOW_AIROSCRIPT_WARNING ]
+if [ $SHOW_airoscript_WARNING ]
 then
 	echo $warntext # TODO put text here, and also, show_airscript_warning on config file.
 fi
@@ -121,14 +121,14 @@ checkdir
 
 if [ "$TERMINAL" = "screen" ]
 then
-	if [ -e ~/.airoscript/screen_has_started ]
+	if [ -e ~/.airoscript-ng/screen_has_started ]
 	then
-		rm ~/.airoscript/screen_has_started
+		rm ~/.airoscript-ng-ng/screen_has_started
 	else
-		touch ~/.airoscript/screen_has_started
-		screen -S airoscript -c $SCREENRC airoscript screen
+		touch ~/.airoscript-ng/screen_has_started
+		screen -S airoscript-ng -c $SCREENRC $0 screen
 		$CLEAR
-		echo `gettext 'Airoscript is terminating...'`
+		echo `gettext 'airoscript-ng is terminating...'`
 		exit
 	fi
 

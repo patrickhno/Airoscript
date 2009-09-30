@@ -1,5 +1,5 @@
 #!/usr/bin/make
-NAME="airoscript"
+NAME="airoscript-ng"
 
 # Binary install programs
 INSTALL = install -c
@@ -27,8 +27,8 @@ srcdir=./src
 install: installdirs\
 	 install-airoscript install-themes \
 	 install-tools \
-	 install-locale \
 	 install-docs \
+	 install-locale \
 	 post-install
 
 installdirs:
@@ -41,8 +41,8 @@ installdirs:
 	
 install-airoscript:
 	@echo "Installing airoscript"
-	@$(INSTALL) $(srcdir)/airoscript.sh $(bindir)/airoscript
-	@$(INSTALL) $(srcdir)/conffiles/airoscript.conf $(etcdir)
+	@$(INSTALL) $(srcdir)/airoscript-ng.sh $(bindir)/$(name)
+	@$(INSTALL) $(srcdir)/conffiles/airoscript-ng.conf $(etcdir)
 	@$(INSTALL) $(srcdir)/functions/*func* $(datadir)
 	@$(INSTALLDATA) $(srcdir)/conffiles/screenrc $(etcdir)
 
@@ -55,13 +55,13 @@ install-tools:
 	@# Commented thigs because airosperl is not yet ready.
 	@echo "Installing tools:"
 	@# Binary files
-	@#echo -e "\t airosconf"
+	@#echo  "\t airosconf"
 	@#$(INSTALL) $(srcdir)/tools/airosconf.sh $(bindir)/airosconf
-	@echo -e "\t airoscwordlist"
+	@echo  "\t airoscwordlist"
 	@$(INSTALL) $(srcdir)/tools/airoscwordlist.pl $(bindir)/airoscwordlist
-	@echo -e "\t airopdate"
+	@echo  "\t airopdate"
 	@$(INSTALL) $(srcdir)/tools/airopdate.sh $(bindir)/airopdate
-	@#echo -e "\t airosperl"
+	@#echo  "\t airosperl"
 	@#$(INSTALL) $(srcdir)/tools/airosperl/airosperl.pl\
 	 #$(bindir)/airosperl.pl
 	@# Data files.
@@ -72,36 +72,37 @@ install-tools:
 	 #"$(datadir)" --force-yes
 
 post-install:
-	@if [ "$(aircrack_prefix)" != "" ]; then sed -i 's/AIRPREFIX=\"\/usr\/local\"/AIRPREFIX=\"$(aircrack_prefix)\"/' $(etcdir)/airoscript.conf;fi
+	@echo ""
+	@if [ "$(aircrack_prefix)" != "/usr/local " ]; then sed -i 's/AIRPREFIX=\"\/usr\/local\"/AIRPREFIX=\"$(aircrack_prefix)\"/g' $(etcdir)/airoscript-ng.conf &>/dev/null;fi
 
 install-docs: install-main-docs install-manpages
 
 install-main-docs:
-	@ echo "Installing documentation"
-	@ echo -e "\t Installing standard documentation"
-	@ for i in doc/* ; do if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then make -s -C $$i docdir="$(docdir)" INSTALLDATA="$(INSTALLDATA)" ; else $(INSTALLDATA) $$i $(docdir) ;fi ; done
+	@echo "Installing documentation"
+	@echo "\t Installing standard documentation"
+	@for i in doc/* ; do if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then make -s -C $$i docdir="$(docdir)" INSTALLDATA="$(INSTALLDATA)" ; else $(INSTALLDATA) $$i $(docdir) ;fi ; done
 
 install-manpages: 
 	@# This will install any manpage on manpages dir. (Just man1 manpages)
-	@ echo -e "\t Installing manpages"
+	@echo  "\t Installing manpages"
 	@for i in $(srcdir)/manpages/*.1 ; do $(INSTALLDATA) $$i $(mandir)/man1/ ; done
 
 ###############################################################################
 #		                    locale                                   #
 ###############################################################################
 generate-locale:
-	@ echo "Installing locales"
 	@for i in $(srcdir)/locale/* ; do \
 		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
 			make -s -C $$i &> /dev/null ; \
 		fi ; \
 	done
 
- 
+
 install-locale: generate-locale
+	@echo "Installing locales"
 	@for i in $(srcdir)/locale/* ; do \
 		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
-			make -s -C $$i install locale="$(locale)" INSTALLDATA="$(INSTALLDATA)" &>/dev/null ; \
+			make -s -C $$i install locale="$(locale)" INSTALLDATA="$(INSTALLDATA)" ; \
 		fi ; \
 	done
 
@@ -113,11 +114,11 @@ uninstall: uninstall-manpages uninstall-binary uninstall-data uninstall-docs uni
 	@echo "Uninstalled succesfully"
 
 uninstall-binary:
-	@rm  $(bindir)/airoscript
+	@rm  $(bindir)/$(name)
 	@rm $(bindir)/airopdate
 
 uninstall-data: uninstall-locale
-	@rm $(etcdir)/airosperl.conf $(sysconfdir)/airoscript.conf
+	@rm $(etcdir)/airosperl.conf $(sysconfdir)/airoscript-ng.conf
 	@rm -r $(datadir)
 
 uninstall-docs:
@@ -133,18 +134,6 @@ uninstall-locale:
 		fi ; \
 	done
 	
-
-###############################################################################
-#		                    Patch                                 #
-###############################################################################
-
-slackware: install
-	@echo "Applying wifi(way/slax) patch"
-	@patch $(DESTDIR)/$(etcdir)/airoscript.conf \
-	$(CURDIR)/src/patches/wifislax.conf.patch
-
-debian:
-	@make -f Makefile-Linux aircrack_prefix="/usr"
 
 all: install 
 
