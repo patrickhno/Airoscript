@@ -24,64 +24,22 @@ function doitwld {
 	$AIRCRACKOLD $FORCEWEPKOREK -b $Host_MAC -w $DUMP_PATH/wlddic $DUMP_PATH/$Host_MAC-01.cap
 }
 
-function wld {
-	if [ $Host_MAC ] 
-	then
-
-			START=`echo $Host_SSID|cut -d_ -f1`
-			case $START in
-				WLAN ) 
-					echo "I'll try to crack it now"
-					if [ -e $DUMP_PATH/$Host_MAC-01.cap ]
-					then	
-						doitwld
-					else
-						echo "`gettext 'No capture file. You will have to capture some ivs first to use wlandecrypter.'` $DUMP_paTH/$Host_MAC"
-					fi
-					;;
-				*)
-					clear
-					echo "`gettext 'Sorry, your target is not supported (not WLAN_XX type)'`"
-					;;
-			esac
-				
-	else
-		clear
-		echo -e "gettext `'Error: You must select a client before performing this attack.'`\n"
-	fi
-	
-}
-
-
-function doitjt {
+doitjt(){
 	$JTD $Host_MAC $Host_SSID $DUMP_PATH/jtddic
 	$AIRCRACKOLD $FORCEWEPKOREK -b $Host_MAC -w $DUMP_PATH/jtddic $DUMP_PATH/$Host_MAC-01.cap
 }
 
-function jtd {
-	if [ $Host_MAC ] 
-	then
-
-			START=`echo $Host_SSID|cut -d_ -f1`
-			case $START in
-				WLAN ) 
-					echo "`gettext 'I will try to crack it now'`"
-					if [ -e $DUMP_PATH/$Host_MAC-01.cap ]
-					then	
-						doitjtd
-					else
-						echo "`gettext 'No capture file. You will have to capture some ivs first to use wlandecrypter.'`"
-					fi
-					;;
-				*)
-					clear
-					echo "`gettext 'Sorry, your target is not supported (not jazztel type)'`"
-					;;
-			esac
-				
-	else
-		clear
-		echo -e "gettext `'Error: You must select a client before performing this attack.'`\n"
-	fi
-	
+wld(){
+if [ !$Host_MAC ] then clear; echo -e "gettext `'Error: You must select a client before performing this attack'`\n"; fi
+if [ $Host_MAC =~ "WLAN(.*)" ]; then
+    if [ -e $DUMP_PATH/$Host_MAC-01.cap ]; then doitjtd
+    else echo "`gettext 'No capture file. Capture some ivs'`"; fi
+fi
+}
+jtd(){
+if [ !$Host_MAC ] then clear; echo -e "gettext `'Error: You must select a client before performing this attack'`\n"; fi
+if [ $Host_MAC =~ "JAZZTEL(.*)" ]; then
+    if [ -e $DUMP_PATH/$Host_MAC-01.cap ]; then doitjtd
+    else echo "`gettext 'No capture file. Capture some ivs'`"; fi
+fi
 }
