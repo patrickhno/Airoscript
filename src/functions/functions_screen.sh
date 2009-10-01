@@ -38,10 +38,8 @@
 
 		#Option 3 (fragmentation attack)
 		function fragnoclient {
-			rm -rf fragment-*.xor
-			rm -rf $DUMP_PATH/frag_*.cap
-			rm -rf $DUMP_PATH/$Host_MAC*
-			killall -9 airodump-ng aireplay-ng # FIXME Is this a good idea? I think we should save pids of what we launched, and then kill them.
+			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
+			killall -9 airodump-ng aireplay-ng
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X  at "*" stuff "$AIREPLAY -5 -b $Host_MAC -h $FAKE_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $WIFI"
 			capture & fakeauth3 &  injectmenu
@@ -49,9 +47,7 @@
 
 		#Option 4 (chopchopattack)
 		function chopchopattack {
-			clear
-			rm -rf $DUMP_PATH/$Host_MAC*
-			rm -rf replay_dec-*.xor
+			clear && rm -rf $DUMP_PATH/$Host_MAC* replay_dec-*.xor
 			capture &  fakeauth3 & injectmenu
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$AIREPLAY --chopchop -b $Host_MAC -h $FAKE_MAC $WIFI"
