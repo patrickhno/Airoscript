@@ -41,7 +41,7 @@ installdirs:
 	
 install-airoscript:
 	@echo "Installing airoscript"
-	@$(INSTALL) $(srcdir)/airoscript-ng.sh $(bindir)/$(name)
+	@$(INSTALL) $(srcdir)/airoscript-ng $(bindir)/$(name)
 	@$(INSTALL) $(srcdir)/conffiles/airoscript-ng.conf $(etcdir)
 	@$(INSTALL) $(srcdir)/functions/*func* $(datadir)
 	@$(INSTALLDATA) $(srcdir)/conffiles/screenrc $(etcdir)
