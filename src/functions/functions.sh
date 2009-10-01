@@ -17,17 +17,8 @@
 
 CHOICES="1 2 3 4 5 6 7 8 9 10 11 12"
 
-if [ "$UNSTABLE" = "1" ]; then
-	if [ -e $UNSTABLEF ]; then
-		. $UNSTABLEF
-	fi
-fi
-if [ "$EXTERNAL" = "1" ]; then
-	if [ -e $EXTF ]; then
-		. $EXTF
-	fi
-fi
-
+if [ "$UNSTABLE" = "1" ] && [ -e $UNSTABLEF ]; then . $UNSTABLEF; fi
+if [ "$EXTERNAL" = "1" ] && [ -e $EXTF ]; then . $EXTF; fi
 
 function menu {
   echo -e "`gettext '
@@ -43,36 +34,34 @@ function menu {
   ## 8)  Inject  - Jump to inj. menu  ##
   ## 9)  Auto    - Does 1,2 and 3     ##
   ## 10) Exit    - Quits              ##'`"
-
-if [ "$UNSTABLE" = "1" ]; then
-	echo    "`gettext '  ## 11) Unstable- Not well tested    ##'`"
-	echo -e "`gettext '  ##__________________________________##\n'`"
-else
-	echo -e "`gettext '  ##__________________________________##\n'`"
-fi
-	echo ""
+if [ "$UNSTABLE" = "1" ]; then echo    "`gettext '  ## 11) Unstable- Not well tested    ##'`";fi
+echo -e "`gettext '  ##__________________________________##\n'`"
 }
 
-##################################################################################
-##################################################################################
-######################### This is for SCAN (1) option: ###########################
-##################################################################################
-##################################################################################
+
+monmode(){
+	$iwconfig $1 |grep "Monitor" && if [ $? != 0 ]; then $AIRMON start $1 $2; fi
+}
+
+
+
+## This is for SCAN (1) option: ###########################
 function choosetype {
-while true; do
-  $CLEAR
+while true; do $clear
   echo -e -n "`gettext '
-____________Encryption_______________
-##     Select AP specification     ##
-##                                 ##
-##   1) No filter                  ##
-##   2) OPN (open)                 ##
-##   3) WEP                        ##
-##   4) WPA                        ##
-##   5) WPA1                       ##
-##   6) WPA2                       ##
-##   7) Return to main menu	   ##
-##_________________________________##
+
++-----------Encryption--------------+
+|      Select AP specification      |
+|                                   |
+|    1) No filter                   |
+|    2) OPN (open)                  |
+|    3) WEP                         |
+|    4) WPA                         |
+|    5) WPA1                        |
+|    6) WPA2                        |
+|    7) Return to main menu	        |
+|                                   |
++-----------------------------------+
 Option number: ' `"
 
   read yn
@@ -113,7 +102,7 @@ done
 }
 	#Subproducts of choosescan.
 	function Scan {
-		$CLEAR
+		$clear
 		rm -rf $DUMP_PATH/dump*
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Scanning for targets'`" $TOPLEFTBIG $BGC $BACKGROUND_COLOR $FGC $DUMPING_COLOR $EXECFLAG $AIRODUMP -w $DUMP_PATH/dump --encrypt $ENCRYPT -a $WIFI
 	}
@@ -135,22 +124,16 @@ done
 		read channel_number
 		echo -e "`gettext \"You typed: $channel_number\"`"
 		set -- ${channel_number}
-		$CLEAR
+		$clear
 		rm -rf $DUMP_PATH/dump*
 		monmode $WIFI $channel_number
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Scanning for targets on channel'` $channel_number" $TOPLEFTBIG $BGC $BACKGROUND_COLOR $FGC $DUMPING_COLOR $EXECFLAG $AIRODUMP -w $DUMP_PATH/dump --channel $channel_number --encrypt $ENCRYPT -a $WIFI
 	}
 
-##################################################################################
-##################################################################################
-######################### This is for SELECT (2) option: ######################################
-##################################################################################
-##################################################################################
+# This is for SELECT (2) option
 function Parseforap {
-	i=0
-	ap_array=`cat $DUMP_PATH/dump-01.csv | grep -a -n Station | awk -F : '{print $1}'`
-	head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv
-	$CLEAR
+	i=0; ap_array=`cat $DUMP_PATH/dump-01.csv | grep -a -n Station | awk -F : '{print $1}'`
+	head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv ; $clear
 
 	echo -e "`gettext \"\\tDetected Access point list\"`\n"
 	echo -e "`gettext \"#\\t\\tMAC\\t\\tCHAN\\tSECU\\tPOWER\\t#CHAR\\t\\tSSID\"`\n"
@@ -210,7 +193,7 @@ while true; do
     3 ) clientdetect && clientfound ; break ;;
     4 ) askclientsel ; break ;;
     5 ) Host_ssidinput && choosetarget ; break ;; #Host_ssidinput is called from many places, not putting it here.
-    * ) echo -e "`gettext \"Unknown response. Try again\"`"; sleep 1; $CLEAR ;;
+    * ) echo -e "`gettext \"Unknown response. Try again\"`"; sleep 1; $clear ;;
   esac
 done 
 }
@@ -259,7 +242,7 @@ done
 	  ##_________________________________##'`"
 		  read yn
 		  case $yn in
-	        1 ) listsel3 ; break ;;
+	            1 ) listsel3 ; break ;;
 		    2 ) break ;;
 		    * ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
 		  esac
@@ -291,7 +274,7 @@ done
 	# Show clientes (Option 4)
 	function askclientsel {
 		while true; do
-		  $CLEAR
+		  $clear
 		  echo -n "`gettext '
 	  ___________Client selection_________
 	  ##      Select next step          ##
@@ -316,7 +299,7 @@ done
 	
 		function asklistsel {
 			while true; do
-				$CLEAR
+				$clear
 				echo -n -e "`gettext \"
 		  ||
 		  ||
@@ -381,69 +364,16 @@ done
 		}
 		
 
-
-##################################################################################
-##################################################################################
-######################### This is for ATTACK (3) option: #########################
-##################################################################################
-##################################################################################
-
+# This is for ATTACK (3) option
 function witchattack {
-	if [ "$Host_ENC" = " WEP " ] || [ "$Host_ENC" = "WEP" ]
-	then
-		monitor_interface2
-		attackwep
-	elif [ "$Host_ENC" = " WPA " ] || [ "$Host_ENC" = "WPA" ]
-	then
-		monitor_interface2
-		attackwpa
-	else
-		attackopn
-	fi			
+	if [ "$Host_ENC" = " WEP " ] || [ "$Host_ENC" = "WEP" ]; then monmode && attackwep
+	elif [ "$Host_ENC" = " WPA " ] || [ "$Host_ENC" = "WPA" ]; then monmode && attackwpa
+	else attackopn; fi			
 }
-	# If encryption detected...
-	function monitor_interface2 {
-		if [ "$TYPE" = "RalinkUSB" ]
-		then
-			IS_MONITOR=`$AIRMON start $WIFICARD $Host_CHAN |grep monitor`
-			$iwconfig $WIFICARD mode monitor channel $Host_CHAN
-			echo $IS_MONITOR
-		elif [ "$TYPE" = "Ralinkb/g" ]
-		then
-			IS_MONITOR=`$AIRMON start $WIFICARD $Host_CHAN |grep monitor`
-			echo $IS_MONITOR
-			iwpriv $WIFICARD rfmontx 1
-			iwpriv $WIFICARD forceprism 1
-		elif [ "$DRIVER" = "PCI" ]
-		then
-			IS_MONITOR=`$AIRMON start $WIFICARD $Host_CHAN |grep monitor`
-			echo $IS_MONITOR
-			iwpriv $WIFICARD rfmontx 1
-			iwpriv $WIFICARD forceprism 1
-	
-		elif [ "$TYPE" = "Atherosmadwifi-ng" ]
-		then
-			#IS_MONITOR=`$AIRMON start wifi0 $Host_CHAN |grep monitor`
-			#$AIRMON stop ath0
-			#echo $IS_MONITOR
-			echo -e "`gettext \"Atheros device, not spamming another one => Doing nothing\"`"
-
-		elif [ "$DRIVER" = "zd1211rw_mac80211" ]
-		then
-			#IS_MONITOR=`$AIRMON start $WIFICARD $Host_CHAN |grep monitor`
-			#echo $IS_MONITOR				
-			echo -e `gettext 'mac80211 device, not spamming another one => Doing nothing'`
-	
-		else
-			IS_MONITOR=`$AIRMON start $WIFICARD $Host_CHAN |grep monitor`
-			echo -e "`gettext \"Running standard monitor mode command\"`"
-			echo $IS_MONITOR
-		fi 
-	}
 	# If wep
 	function attackwep {
 	while true; do
-	  $CLEAR
+	  $clear
 	  echo -e -n "`gettext '
 	  ___________WEP ATTACKS________________
 	  ##  Attacks not using a client      ##
@@ -475,18 +405,18 @@ function witchattack {
 	  echo ""
 	  case $yn in
 	    1 ) fakeautoattack ; break ;;
-	    2 ) fakeinteractiveattack;$CLEAR ; break ;;
-	    3 ) fragnoclient ;$CLEAR; break ;;
-	    4 ) chopchopattack ;$CLEAR; break ;;
-	    5 ) cafelatteattack ;$CLEAR; break ;;
-	    6 ) hirteattack ;$CLEAR; break ;;
-	    7 ) attackclient ;$CLEAR; break ;;
-	    8 ) interactiveattack ;$CLEAR; break ;;
-	    9 ) fragmentationattack ;$CLEAR; break ;;
-	    10 ) fragmentationattackclient;$CLEAR ; break ;;   
-	    11 ) chopchopattackclient;$CLEAR ; break ;;
-	    12 ) pskarp ;$CLEAR; break ;;
-	    13 ) $CLEAR;break ;;
+	    2 ) fakeinteractiveattack;$clear ; break ;;
+	    3 ) fragnoclient ;$clear; break ;;
+	    4 ) chopchopattack ;$clear; break ;;
+	    5 ) cafelatteattack ;$clear; break ;;
+	    6 ) hirteattack ;$clear; break ;;
+	    7 ) attackclient ;$clear; break ;;
+	    8 ) interactiveattack ;$clear; break ;;
+	    9 ) fragmentationattack ;$clear; break ;;
+	    10 ) fragmentationattackclient;$clear ; break ;;   
+	    11 ) chopchopattackclient;$clear ; break ;;
+	    12 ) pskarp ;$clear; break ;;
+	    13 ) $clear;break ;;
 	    * ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
 	  esac
 	done 
@@ -536,7 +466,7 @@ function witchattack {
 
 		#Option 4 (chopchopattack)
 		function chopchopattack {
-			$CLEAR
+			$clear
 			rm -rf $DUMP_PATH/$Host_MAC*
 			rm -rf replay_dec-*.xor
 			capture &  fakeauth3 & $CDCMD  $TERMINAL $HOLD $TITLEFLAG  "`gettext 'ChopChoping:'` $Host_SSID " $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $EXECFLAG $AIREPLAY --chopchop -b $Host_MAC -h $FAKE_MAC $IWIFI & injectmenu
@@ -600,7 +530,7 @@ function witchattack {
 		}
 		#Option 11
 		function chopchopattackclient {
-			$CLEAR
+			$clear
 			rm -rf $DUMP_PATH/$Host_MAC*
 			rm -rf replay_dec-*.xor
 			capture & $CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'ChopChoping: $Host_SSID'`" $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $EXECFLAG $AIREPLAY --chopchop -h $Client_MAC $IWIFI & injectmenu
@@ -615,7 +545,7 @@ function witchattack {
 
 	# If wpa
 	function wpahandshake {
-		$CLEAR
+		$clear
 		rm -rf $DUMP_PATH/$Host_MAC*
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Capturing data on channel:'` $Host_CHAN" $TOPLEFTBIG $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
 	}
@@ -623,10 +553,10 @@ function witchattack {
 	function attackopn { # If no encryption detected
 	  if [ "$Host_SSID" = "" ] 
 	  then
-		 $CLEAR
+		 $clear
 	 	 echo  "`gettext 'ERROR: You have to select a target'`"
 	  else
-		$CLEAR
+		$clear
 			echo `gettext "ERROR: Network not encrypted or no network selected "`
 			fi
 	}
@@ -634,7 +564,7 @@ function witchattack {
 
 	function attackwpa {
 while true; do
-$CLEAR
+$clear
 echo "`gettext '
 ____________Select WPA Attack________
 #                                   #
@@ -644,8 +574,8 @@ ____________Select WPA Attack________
 Option: '`"
 read n
 	case $n in 
-		1) wpahandshake; $CLEAR; break;;
-		2) tkiptunstdqos; $CLEAR; break;;
+		1) wpahandshake; $clear; break;;
+		2) tkiptunstdqos; $clear; break;;
 	esac
 done
 	}
@@ -653,23 +583,21 @@ done
 	# 1 just capture 
 
 	function wpahandshake {
-		$CLEAR
+		$clear
 		rm -rf $DUMP_PATH/$Host_MAC*
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Capturing data on channel:'` $Host_CHAN" $TOPLEFTBIG $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
 	}
 
 	# 2 Use tkiptun-ng
 	function tkiptunstdqos {
-		$CLEAR
+		$clear
 		rm -rf $DUMP_PATH/$Host_MAC*
 		ifconfig $WIFICARD channel $Host_CHAN # Hope this is ok for all cards
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Executing tkiptun-ng for ap'` $Host_MAC" $TOPLEFTBIG $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $TKIPTUN -h $FAKE_MAC -a $Host_MAC -m $TKIPTUN_MIN_PL -n $TKIPTUN_MAX_PL  $WIFI & menufonction
 	}
-##################################################################################
-##################################################################################
-######################### This is for CRACK (4)  option: ######################################
-##################################################################################
-##################################################################################
+
+    
+# This is for CRACK (4)  option
 function witchcrack {
 	if [ "$EXTERNAL" = "1" ]
 		then
@@ -694,7 +622,7 @@ function witchcrack {
 					1 ) wld ; break ;;
 					2 ) jtd ; break ;;
 					3 ) selectcracking ; break ;;
-					4 ) $CLEAR; break;;
+					4 ) $clear; break;;
 					* ) echo "Unknown response. Try again" ;;
 				esac
 			done 
@@ -707,7 +635,7 @@ function witchcrack {
 function selectcracking {
 	if [ "$Host_ENC" = "OPN" ] || [ "$Host_ENC" = "" ] || [ "$Host_ENC" = " OPN " ]
 	then
-		$CLEAR
+		$clear
 		echo `gettext "ERROR: Network not encrypted or no network selected "`
 
 	else
@@ -735,9 +663,9 @@ function selectcracking {
 		Option: '`"
 		read yn
 		case $yn in
-		1 ) crackptw ; $CLEAR; break ;;
-		2 ) crackstd ; $CLEAR; break ;;
-		3 ) crackman ; $CLEAR; break ;;
+		1 ) crackptw ; $clear; break ;;
+		2 ) crackstd ; $clear; break ;;
+		3 ) crackman ; $clear; break ;;
 		* ) echo "`gettext 'Unknown response. Try again'`" ;;
 		esac
 		done 
@@ -769,10 +697,8 @@ function selectcracking {
 		$TERMINAL $HOLDFLAG $TOPRIGHT $TITLEFLAG "Aircracking: $Host_SSID" $EXECFLAG $AIRCRACKOLD $FORCEWPAKOREK -a 2 -b $Host_MAC -0 -s $DUMP_PATH/$Host_MAC-01.cap -w $WORDLIST & menufonction # There was a -0 -s before $DPATH/$HmaC but -0 is not documented, anyway, it works, so I replaced it (-s is for showing ascii key)
 	}
 	
-########################################################################################## 
-########################################################################################## 
-######################### This is for Fake auth  (5)  option: ############################ 
-########################################################################################## 
+# This is for Fake auth  (5)  option
+
 ##########################################################################################
 # This is the function to select Target from a list					 #
 # MAJOR CREDITS TO: Befa , MY MASTER, I have an ALTAR dedicated to him in my living room # 
@@ -781,7 +707,7 @@ function selectcracking {
 function choosefake {
 if [ "$Host_SSID" = "" ]
 then 
-	$CLEAR
+	$clear
 	echo "ERROR: You have to select a target first"
 else
 	while true; do
@@ -799,9 +725,9 @@ ______________Fake auth______________
 Option: '`"
 		read yn
 		case $yn in
-			1 ) fakeauth1 ;$CLEAR; break ;;
-			2 ) fakeauth2 ;$CLEAR; break ;;
-			3 ) fakeauth3 ;$CLEAR; break ;;
+			1 ) fakeauth1 ;$clear; break ;;
+			2 ) fakeauth2 ;$clear; break ;;
+			3 ) fakeauth3 ;$clear; break ;;
 			* ) echo "Unknown response. Try again" ;;
 		esac
 	done 
@@ -820,15 +746,13 @@ fi
 		$TERMINAL $HOLD $TITLEFLAG "`gettext 'Associating with:'`$Host_SSID" $BOTTOMRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$ASSOCIATION_COLOR" $EXECFLAG $AIREPLAY --fakeauth 5 -o 10 -q 1 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI & menufonction
 	}
 	
-##################################################################################
-##################################################################################
-######################### This is for deauth  (6)  option:       ###################################
-##################################################################################
-##################################################################################
+
+# This is for deauth  (6)  option
+
 function choosedeauth {
 if [ "$Host_SSID" = "" ]
 then
-	$CLEAR
+	$clear
 	echo "ERROR: You have to select a target first"
 else
 	while true; do
@@ -846,9 +770,9 @@ _____________________________________
 Option: '`"
 	read yn
 	case $yn in
-	1 ) deauthall ; $CLEAR ; break ;;
-	2 ) deauthfake ; $CLEAR ; break ;;
-	3 ) deauthclient ; $CLEAR; break ;; 
+	1 ) deauthall ; $clear ; break ;;
+	2 ) deauthfake ; $clear ; break ;;
+	3 ) deauthclient ; $clear; break ;; 
 	* ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
 
 	esac
@@ -864,7 +788,7 @@ fi
 		function deauthclient {
 		if [ "$Client_MAC" = "" ]
 		then	
-			$CLEAR
+			$clear
 			echo "ERROR: You have to select a client first"
 		else
 			$TERMINAL $HOLD $TOPRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Kicking $Client_MAC from:'` $Host_SSID" $EXECFLAG $AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC -c $Client_MAC $IWIFI
@@ -876,11 +800,8 @@ fi
 		}
 
 
-##################################################################################
-##################################################################################
-######################### This is for others  (7)  option:       #################
-##################################################################################
-##################################################################################
+# This is for others  (7)  option
+
 function optionmenu {
 	while true; do
 echo -e -n "`gettext '
@@ -905,16 +826,16 @@ Option: '`"
 	read yn
 	echo ""
 	case $yn in
-	1 ) inject_test ; $CLEAR; break ;;
+	1 ) inject_test ; $clear; break ;;
 	2 ) setinterface2 ; $ClEAR; break ;;
-	3 ) cleanup ;$CLEAR; break ;; 
-	4 ) wichchangemac ; $CLEAR; break ;;
-	5 ) choosemdk ;$CLEAR; break;;
-	6 ) choosewesside ;$CLEAR; break ;;
-	7 ) monitor_interface;$CLEAR ; break ;;
-	8 ) airmoncheck ;$CLEAR; break ;;
-	9 ) changedumppath;$CLEAR; break;;
-	10 ) $CLEAR;break ;;
+	3 ) cleanup ;$clear; break ;; 
+	4 ) wichchangemac ; $clear; break ;;
+	5 ) choosemdk ;$clear; break;;
+	6 ) choosewesside ;$clear; break ;;
+	7 ) monmode;$clear ; break ;;
+	8 ) airmoncheck ;$clear; break ;;
+	9 ) changedumppath;$clear; break;;
+	10 ) $clear;break ;;
 	* ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
 	
 	esac
@@ -946,7 +867,7 @@ Option: '`"
 				DRIVER=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $4}'`
 			fi
 
-		$CLEAR
+		$clear
 		$IWIFI=$WIFI
 		echo  `gettext 'Interface used is :'` $WIFICARD
 		echo  `gettext 'Interface type is :'` "$TYPE ($DRIVER)"
@@ -957,7 +878,7 @@ Option: '`"
 		killall -9 aireplay-ng airodump-ng > /dev/null &
 		$AIRMON stop $WIFICARD
 		ifconfig $WIFICARD down
-		$CLEAR
+		$clear
 		sleep 2
 		$CARDCTL eject
 		sleep 2
@@ -984,9 +905,9 @@ Option: '`"
 			read yn
 			
 			case $yn in
-				1 ) fakemacchanger ;$CLEAR; break ;;
-				2 ) macchanger ;$CLEAR; break ;;
-				3 ) macinput ; $CLEAR; break ;;
+				1 ) fakemacchanger ;$clear; break ;;
+				2 ) macchanger ;$clear; break ;;
+				3 ) macinput ; $clear; break ;;
 				* ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
 			esac
 		done 
@@ -1096,7 +1017,7 @@ Option: '`"
 			echo "$DRIVER $TYPE"
 				fi			
 			}
-			# I suppose all this code if for precaution. I mean, if sometime the method differes between the different kind of cards, or if we've got to add a new card with a differente method.
+			# I suppose all this code if for precaution. I mean, if sometime the method differes between the different kind of cards, or if we've got to add a new card with a differente method. FIXME I don't like it so I'll delete it.
 				function manualchangemacrausb {
 					ifconfig $WIFICARD down
 					$MACCHANGER -m  $Client_MAC $WIFICARD
@@ -1120,7 +1041,7 @@ Option: '`"
 			if [ -x $MDK3 ] 
 			then
 			while true; do
-				$CLEAR
+				$clear
 				echo -n "`gettext '
 			_____________________________________
 			##   Choose MDK3 Options           ##
@@ -1145,8 +1066,7 @@ Option: '`"
 				esac
 			done 
 			else
-				$CLEAR
-				echo "Sorry, this function is not installed on your system"
+				$clear && echo "Sorry, this function is not installed on your system"
 			fi
 		}
 	
@@ -1161,7 +1081,7 @@ Option: '`"
 			function mdknewtarget {
 				ap_array=`cat $DUMP_PATH/dump-01.csv | grep -a -n Station | awk -F : '{print $1}'`
 				head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv
-				$CLEAR
+				$clear
 				echo "        Detected Access point list"
 				echo ""
 				echo " #      MAC                      CHAN    SECU    POWER   #CHAR   SSID"
@@ -1207,7 +1127,7 @@ Option: '`"
 	# 6.
 		function choosewesside {
 			while true; do
-				$CLEAR
+				$clear
 				echo -e -n "`gettext '
 	_____________________________________
 	##   Choose Wesside-ng Options     ##
@@ -1237,45 +1157,31 @@ Option: '`"
 
 
 			function wesside {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'`" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -i $WIFI & choosewesside
 			}
 
 			function wessidetarget {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID)" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -i $WIFI & choosewesside
 			}
 
 			function wessidetargetmaxer {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID)" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -k 1 -i $WIFI & choosewesside
 			}
 
 			function wessidetargetpoor {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID)" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -k 3 -i $WIFI & choosewesside
 			}
 
 			function wessidenewtarget {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap  key.log
 				ap_array=`cat $DUMP_PATH/dump-01.csv | grep -a -n Station | awk -F : '{print $1}'`
-				head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv
-				$CLEAR
+				head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv && $clear && i=0
 				echo -e "`gettext\"        Detected Access point list\"`"
-				echo ""
-				echo " #      MAC                      CHAN    SECU    POWER   #CHAR   SSID"
-				echo ""
-				i=0
+				echo -e "\n #      MAC                      CHAN    SECU    POWER   #CHAR   SSID\n"
 				while IFS=, read MAC FTS LTS CHANNEL SPEED PRIVACY CYPHER AUTH POWER BEACON IV LANIP IDLENGTH ESSID KEY;do 
 				longueur=${#MAC}
 				if [ $longueur -ge 17 ]; then
@@ -1290,7 +1196,6 @@ Option: '`"
 				fi
 				
 				done < $DUMP_PATH/dump-02.csv
-					echo ""
 					echo -e "`gettext \"       Select target               \"`"
 					read choice
 						idlenght=${aidlenght[$choice]}
@@ -1310,66 +1215,16 @@ Option: '`"
 						$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID9" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -i $WIFI & choosewesside
 			}
 
-	# 7.
-	# starts monitor mode on selected interface		
-	function monitor_interface {
-		if [ "$TYPE" = "RalinkUSB" ]
-		then
-			IS_MONITOR=`$AIRMON start $WIFICARD |grep monitor`
-			$iwconfig $WIFICARD mode monitor
-			echo $IS_MONITOR
-	
-		elif [ "$TYPE" = "Ralinkb/g" ]
-		then
-			IS_MONITOR=`$AIRMON start $WIFICARD |grep monitor`
-			echo $IS_MONITOR
-			iwpriv $WIFICARD rfmontx 1 2>/dev/null
-			iwpriv $WIFICARD forceprism 1 2>/dev/null
-		elif [ "$DRIVER" = "PCI" ]
-		then
-			IS_MONITOR=`$AIRMON start $WIFICARD |grep monitor`
-			echo $IS_MONITOR
-			iwpriv $WIFICARD rfmontx 1 2>/dev/null
-			iwpriv $WIFICARD forceprism 1 2>/dev/null
-	
-		elif [ "$TYPE" = "Atherosmadwifi-ng" ]
-		then
-			IS_MONITOR=`$AIRMON start wifi0 |grep monitor`
-			$AIRMON stop ath0
-			$AIRMON stop ath1
-			$AIRMON stop ath2
-			echo $IS_MONITOR
-		else
-
-			IS_MONITOR=`$AIRMON start $WIFICARD |grep monitor`
-			echo "Running standard monitor mode command"
-			echo $IS_MONITOR
-		fi 
-	}
 
 
 	# 8.
 	function airmoncheck {
-		if [ "$TYPE" = "RalinkUSB" ]
-		then
-			$AIRMON check $WIFICARD
-			echo ""
-		elif [ "$TYPE" = "Ralinkb/g" ]
-		then
-			$AIRMON check $WIFICARD
-			echo ""
-		elif [ "$DRIVER" = "PCI" ]
-		then
-			$AIRMON check $WIFICARD
-			echo ""
-		elif [ "$TYPE" = "Atherosmadwifi-ng" ]
-		then
-			$AIRMON check wifi0
-			echo ""
-		else
-			$AIRMON check $WIFICARD
-			echo ""
-		fi 
+		if [ "$TYPE" = "RalinkUSB" ]; then $AIRMON check $WIFICARD
+		elif [ "$TYPE" = "Ralinkb/g" ]; then $AIRMON check $WIFICARD
+		elif [ "$DRIVER" = "PCI" ]; then $AIRMON check $WIFICARD
+		elif [ "$TYPE" = "Atherosmadwifi-ng" ]; then $AIRMON check wifi0
+		else $AIRMON check $WIFICARD
+		fi
 	}
 
 changedumppath(){
@@ -1381,13 +1236,9 @@ changedumppath(){
 	clear
 }
 
-##################################################################################
-##################################################################################
-######################### This is for iNJECTION  (8)  option:       ##############
-##################################################################################
-##################################################################################
+# This is for iNJECTION  (8)  option
 function injectmenu {
-	$CLEAR
+	$clear
 	while true; do
 		echo -n -e "`gettext '
 _____________________________________
@@ -1409,7 +1260,7 @@ Option: '`"
 			2 ) fragmentationattackend ; break ;;
 			3 ) chopchopend ; break ;; 
 			4 ) chopchopclientend ; break ;;
-			5 ) $CLEAR; break ;;
+			5 ) $clear; break ;;
 			* ) echo "Unknown response. Try again" ;;
 		esac
 	done 
@@ -1419,7 +1270,7 @@ Option: '`"
 	function fragnoclientend {
 		if [ "$Host_MAC" = "" ]
 		then
-			$CLEAR
+			$clear
 			echo `gettext 'ERROR: You must select a target first'`
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $FAKE_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
@@ -1431,7 +1282,7 @@ Option: '`"
 
 		if [ "$Host_MAC" = "" ]
 		then
-			$CLEAR
+			$clear
 			echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
@@ -1442,7 +1293,7 @@ Option: '`"
 	function chopchopend {
 		if [ "$Host_MAC" = "" ]
 		then
-			$CLEAR
+			$clear
 			echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
@@ -1456,7 +1307,7 @@ Option: '`"
 	function chopchopclientend {
 		if [ "$Host_MAC" = "" ]
 		then
-			$CLEAR
+			$clear
 			echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
@@ -1465,10 +1316,7 @@ Option: '`"
 		$TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Sending chopchop to:'` $Host_SSID" $EXECFLAG $AIREPLAY --interactive -r $DUMP_PATH/chopchop_$Host_MAC.cap -h $Client_MAC -x $INJECTRATE $IWIFI & menufonction
 		fi
 	}
-# FIXME: From here, I have not developed more "airoscript interactive"
-###########################################
-########Those three are called from many places.#########
-###########################################
+
 	function capture {
 		rm -rf $DUMP_PATH/$Host_MAC*
 		$TERMINAL $HOLD $TITLEFLAG "`gettext 'Capturing data on channel'`: $Host_CHAN" $TOPLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $AIRODUMP --bssid $Host_MAC -w $DUMP_PATH/$Host_MAC -c $Host_CHAN -a $WIFI 
@@ -1482,20 +1330,14 @@ Option: '`"
 		$TERMINAL $HOLD $TOPRIGHT $TITLEFLAG "`gettext 'Fake function to jump to menu'`" $EXECFLAG echo "Aircrack-ng is a great tool, Mister_X ASPj & HIRTE are GODS"
 	}
 	
-	# This is the input part for ssid. Used for almost two functions. (blankssid and choosetarget)
 	function Host_ssidinput {
 		echo "#######################################"
 		echo -e "`gettext \"###       Please enter SSID         ###\"`"
 		read Host_SSID
 		set -- ${Host_SSID}
-		$CLEAR
+		$clear
 	}
-###########################################
-########End of the ones that are called from many places.####
-###########################################
 
-
-################### Warning: I can't find those functions called from anywhere ###########
 function witchconfigure {
 if [ $Host_ENC = "WEP" ]
   		then
@@ -1522,7 +1364,7 @@ function doauto {
 		if [ -e $DUMP_PATH/dump-01.csv ] 	
 		then
 			Parseforap
-			$CLEAR
+			$clear
 			if [ "$Host_SSID" = $'\r' ]
 	 			then blankssid;
 			elif [ "$Host_SSID" = "No SSID has been detected" ]
@@ -1530,9 +1372,9 @@ function doauto {
 			fi
 			target
 			choosetarget
-			$CLEAR
+			$clear
 		else
-			$CLEAR
+			$clear
 			echo "ERROR: You have to scan for targets first"
 		fi
 		# And now the cracking option :-) 
@@ -1547,40 +1389,32 @@ function doauto {
 
 checkforcemac(){
 if [ $FORCE_MAC_ADDRESS -eq 1 ]; then
-	$CLEAR
+	$clear
 	echo "Warn: Not checking mac address"
 	menu
 else
 	echo -ne "Checking mac address...done"
 	mac=`$MACCHANGER -s wlan0|awk {'print $3'}`
 	if [ "$FAKE_MAC" != "$mac" ]; then
-		wichchangemac;$CLEAR;menu
+		wichchangemac;$clear;menu
 	fi
 fi
 }
 
 function setinterface {
-	#INTERFACES=`$iwconfig|grep --regexp=^[^:blank:].[:alnum:]|awk '{print $1}'`
-	#INTERFACES=`$iwconfig|egrep "^[a-Z]+[0-9]+" |awk '{print $1}'`
-	#INTERFACES=`ip link |egrep "^[0-9]+" | cut -d':' -f 2 | cut -d' ' -f 2 | grep -v "lo" |awk '{print $1}'` # I dont really know why is this like that, the cut for spaces and awk print $1 doesnt make the same things? --> No, awk also treats tabs as spaces as I know
 	INTERFACES=`ip link|egrep "^[0-9]+"|cut -d ':' -f 2 |awk {'print $1'} |grep -v lo`
-	if [ "$WIFI" = "" ]
-	then
+    if [ "$WIFI" = "" ]; then
 		echo -e "\n_____"`gettext 'Interface selection'`"_____"
 		PS3="`gettext 'Select your interface: '`"
 
-		select WIFI in $INTERFACES; do
-			break;
-		done
-
+		select WIFI in $INTERFACES; do break; done
 		export WIFICARD=$WIFI
 
 		echo -e "______________________________\n"
-
 		echo -n `gettext 'Should I put it in monitor mode?'` " (Y/n) "
-		read answer
-			if [ "$answer" != "n" ]
-			then
+
+        read answer
+			if [ "$answer" != "n" ]; then
 				AIROUTPUT=$($AIRMON start $WIFICARD|grep -A 1 $WIFICARD);
 				TYPE=`echo \"$AIROUTPUT\"  | grep monitor | awk '{print $2 $3}'`
 				DRIVER=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $4}'`
@@ -1592,83 +1426,58 @@ function setinterface {
 				DRIVER=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $4}'`
 			fi
 
+		$clear
+		echo  `gettext 'Interface used is :'` $WIFI\
+		`gettext 'Interface type is :'` "$TYPE ($DRIVER)"
+		testmac 
 
-
-
-		$CLEAR
-		echo  `gettext 'Interface used is :'` $WIFI
-		echo  `gettext 'Interface type is :'` "$TYPE ($DRIVER)"
-			testmac 
-		read -p "Do you want to use airserv-ng? [y/N] " var 
+		read -p "Do you want to use airserv-ng? [y/N] " var
 		if [ "$var" == "y" ]; then
 			export WIFICARD=$WIFI
 			read -p "Start a local server? [y/N] " var
-			if [ "$var" == "y" ]; then
-				export WIFI="127.0.0.1:666"
-				$AIRSERV -d  $WIFICARD >/dev/null 2>1 & 
-			else
-				read -p "Enter airserv-ng address [127.0.0.1:666]" WIFI
-				if [ "$WIFI" == "" ]; then
-					WIFI="127.0.0.1:666"
-				fi
-				export WIFI=$WIFI
+			if [ "$var" == "y" ]; then export WIFI="127.0.0.1:666" && $AIRSERV -d  $WIFICARD >/dev/null 2>1 & 
+			else read -p "Enter airserv-ng address [127.0.0.1:666]" WIFI
+				if [ "$WIFI" == "" ]; then export WIFI="127.0.0.1:666";fi
 			fi
 		fi
-		export IWIFI=$WIFI # This way, even if we use airserv-ng IWIFI Will be same as wifi, but if we use conf file to tell who is wifi and iwifi, they'll remain as in conffile. 
+
+		export IWIFI=$WIFI 
 	else
 		echo -n `gettext 'Shall I put in monitor mode'` $WIFI "? (Y/n) "
 		read answer
-			if [ "$answer" != "n" ]
-			then
+			if [ "$answer" != "n" ]; then
 				TYPE=`$AIRMON start $WIFICARD | grep monitor | awk '{print $2 $3}'`
-				# DRIVER=`$AIRMON start $WIFICARD | grep monitor | awk '{print $2 $3}'`
-                # WTF? Driver and type where the same
                 DRIVER="$TYPE"
 			else
 				TYPE=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $2 $3}'`
-				#DRIVER=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $2 $3}'`
                 DRIVER="$TYPE"
 			fi
 
-		$CLEAR
-
+		$clear
 		echo  `gettext 'Interface used is :'` $WIFI $IWIFI
 		echo  `gettext 'Interface type is :'` "$TYPE ($DRIVER)"
 		testmac
 	fi
 }
 
-monmode() {
-	if [ "`$iwconfig $1 |grep Monitor`" ];then
-		echo "`gettext 'Your card is already in monitor mode'`"
-	else
-		$AIRMON start $1 $2
-	fi
-}
 
-# Test fake mac.
 function testmac {
-	if [ "$TYPE" = "Atherosmadwifi-ng" ]
-	then
-		echo "Previous fake_mac : $FAKE_MAC"
+	if [ "$TYPE" = "Atherosmadwifi-ng" ]; then
 		FAKE_MAC=`ifconfig $WIFICARD | grep $WIFI | awk '{print $5}' | cut -c -17  | sed -e "s/-/:/" | sed -e "s/\-/:/"  | sed -e "s/\-/:/" | sed -e "s/\-/:/" | sed -e "s/\-/:/"`
 		echo -e "`gettext \"Changed fake_mac : $FAKE_MAC\"`" 
-	else
-		echo ""
 	fi
 }
 
-# This is another great contribution from CurioCT that allows you to manually enter SSID if none is set
 function blankssid {
 	while true; do
-		$CLEAR
+		$clear
 		echo -e -n "`gettext '
-		_____________________________________
-		##       Blank SSID detected       ##
-		##    Do you want to in put one    ##
-		##    1) Yes                       ##
-		##    2) No                        ##
-		##_________________________________##
+		+-----------------------------------+
+		|        Blank SSID detected        |
+		|     Do you want to in put one     |
+		|     1) Yes                        |
+		|     2) No                         |
+		+-----------------------------------+
 		Option: '`"
 		read yn
 		case $yn in
@@ -1694,83 +1503,63 @@ function target {
 }  
 
 function checkdir {
-if [ -d $DUMP_PATH ]; then
-	echo -e "`gettext \"[INFO] Output folder is $DUMP_PATH\"`"
-# Disabled, now it uses mktmp to create temp directory, so this is not required.
-#else
-#	echo -e "`gettext \"[INFO] Output folder does not exist, i will create it now\"`"
-#	mkdir $DUMP_PATH
-#	echo -e "`gettext \"[INFO]  Output folder is now set to $DUMP_PATH\"`"
-fi
+    if [ -d $DUMP_PATH ]; then echo -e "`gettext \"[INFO] Output folder is $DUMP_PATH\"`";fi
 }
 
 
 function reso {
 	while true; do
-		if [ "$resonset" = "" ]
-		then
-		echo -e "`gettext \"Select screen resolution            \"` \n"
-		echo -e "`gettext \"____Available resolutions_____\"`"
-echo -n "##			    ##
-## 	1) 640x480 	    ##
-## 	2) 800x480  	    ##
-## 	3) 800x600	    ##
-##	4) 1024x768 	    ##
-##	5) 1280x768 	    ##
-##	6) 1280x1024	    ##
-##	7) 1600x1200	    ##
-##__________________________##
-Option: "
+		if [ "$resonset" = "" ]; then
+            echo -en "`gettext \"______Resolutions______\"`"
+            echo -n "##			    ##"
+            "  ##  1) 640x480 	    ##"
+            "  ##  2) 800x480       ##"
+            "  ##  3) 800x600       ##"
+            "  ##  4) 1024x768 	    ##"
+            "  ##  5) 1280x768 	    ##"
+            "  ##  6) 1280x1024	    ##"
+            "  ##  7) 1600x1200	    ##"
+            "  ##___________________##"
+            "Option: "
 read reson
 		fi
 
 		case $reson in
-			1 ) TLX="83";TLY="11";TRX="60";TRY="18";BLX="75";BLY="18";BRX="27";BRY="17";bLX="100";bLY="30";bRX="54";bRY="25"; setterminal; break;;
-			2 ) TLX="90";TLY="11";TRX="60";TRY="18";BLX="78";BLY="26";BRX="52";BRY="15";bLX="130";bLY="30";bRX="78";bRY="25"; setterminal; break;;
-			3 ) TLX="92";TLY="11";TRX="68";TRY="25";BLX="78";BLY="26";BRX="52";BRY="15";bLX="92" ;bLY="39";bRX="78";bRY="24"; setterminal; break;;
-			4 ) TLX="92";TLY="14";TRX="68";TRY="25";BLX="92";BLY="36";BRX="74";BRY="20";bLX="100";bLY="52";bRX="54";bRY="25"; setterminal; break;;
-			5 ) TLX="100";TLY="20";TRX="109";TRY="20";BLX="100";BLY="30";BRX="109";BRY="20";bLX="100";bLY="52";bRX="109";bRY="30"; setterminal; break;;
-			6 ) TLX="110";TLY="35";TRX="99";TRY="40";BLX="110";BLY="35";BRX="99";BRY="30";bLX="110";bLY="72";bRX="99";bRY="40"; setterminal; break;;
-			7 ) TLX="130";TLY="40";TRX="68";TRY="25";BLX="130";BLY="40";BRX="132";BRY="35";bLX="130";bLY="85";bRX="132";bRY="48"; setterminal; break;;
-			* ) echo -e "`gettext \"Unknown response. Try again\"`"; sleep 1; $CLEAR ;;
+			1 ) TLX="83";TLY="11";TRX="60";TRY="18";BLX="75";BLY="18";
+                BRX="27";BRY="17";bLX="100";bLY="30";bRX="54";bRY="25"; setterminal; break;;
+			2 ) TLX="90";TLY="11";TRX="60";TRY="18";BLX="78";BLY="26";
+                BRX="52";BRY="15";bLX="130";bLY="30";bRX="78";bRY="25"; setterminal; break;;
+			3 ) TLX="92";TLY="11";TRX="68";TRY="25";BLX="78";BLY="26";
+                BRX="52";BRY="15";bLX="92" ;bLY="39";bRX="78";bRY="24"; setterminal; break;;
+			4 ) TLX="92";TLY="14";TRX="68";TRY="25";BLX="92";BLY="36";
+                BRX="74";BRY="20";bLX="100";bLY="52";bRX="54";bRY="25"; setterminal; break;;
+			5 ) TLX="100";TLY="20";TRX="109";TRY="20";BLX="100";BLY="30";
+                BRX="109";BRY="20";bLX="100";bLY="52";bRX="109";bRY="30"; setterminal; break;;
+			6 ) TLX="110";TLY="35";TRX="99";TRY="40";BLX="110";BLY="35";
+                BRX="99";BRY="30";bLX="110";bLY="72";bRX="99";bRY="40"; setterminal; break;;
+			7 ) TLX="130";TLY="40";TRX="68";TRY="25";BLX="130";BLY="40";
+                BRX="132";BRY="35";bLX="130";bLY="85";bRX="132";bRY="48"; setterminal; break;;
+			* ) echo -e "`gettext \"Unknown response. Try again\"`"; sleep 1; $clear ;;
 		esac
-
 	done
 }
 
 function setterminal {
-	$CLEAR
-	getterminal
+	$clear && getterminal
 	echo -e "`gettext '\tIm going to set terminal options for your terminal now'`...`gettext 'done'`" 
-	# This way we support multiple terminals, not only $TERMINAL
 	case $TERMINAL in 
 		xterm|uxterm ) 
-			export TOPLEFT="-geometry $TLX*$TLY+0+0 "
-			export TOPRIGHT="-geometry $TRX*$TRY-0+0 "
-			export BOTTOMLEFT="-geometry $BLX*$BLY+0-0 "
-			export BOTTOMRIGHT="-geometry $BRX*$BRY-0-0 "
-			export TOPLEFTBIG="-geometry $bLX*$bLY+0+0 "
-			export TOPRIGHTBIG="-geometry $bLX*$bLY+0-0 "
-			export HOLDFLAG="-hold"
-			export TITLEFLAG="-T"
-			export FGC="-fg"
-			export BGC="-bg"
-			export EXECFLAG="-e"
-			if [ "$DEBUG" = "1" ]
-			then
-				echo $TOPLEFT
-				echo $TOPRIGHT
-				echo $BOTTOMLEFT
-				echo $BOTTOMRIGHT
-				echo $TOPLEFTBIG
-				echo $TOPRIGHTBIG
-				printf -- "$EXECFLAG \n"
-				echo $HOLDFLAG
-				echo $TITLEFLAG
-				echo $FGC
-				echo $BGC
-			fi
-			;;
+			TOPLEFT="-geometry $TLX*$TLY+0+0 "
+			TOPRIGHT="-geometry $TRX*$TRY-0+0 "
+			BOTTOMLEFT="-geometry $BLX*$BLY+0-0 "
+			BOTTOMRIGHT="-geometry $BRX*$BRY-0-0 "
+			TOPLEFTBIG="-geometry $bLX*$bLY+0+0 "
+			TOPRIGHTBIG="-geometry $bLX*$bLY+0-0 "
+			HOLDFLAG="-hold"
+			TITLEFLAG="-T"
+			FGC="-fg"
+			BGC="-bg"
+			EXECFLAG="-e"
 		
 		gnome-terminal|gnome-terminal.wrapper ) 
 			TOPLEFT="-geometry=$TLX*$TLY+0+0 "
@@ -1780,9 +1569,8 @@ function setterminal {
 			TOPLEFTBIG="-geometry=$bLX*$bLY+0+0 "
 			TOPRIGHTBIG="-geometry=$bLX*$bLY+0-0 "
 			EXECFLAG="-e "
-			HOLDFLAG="" # Apparently, gnome terminal can't be hold that way. 
+			HOLDFLAG="" 
 			TITLEFLAG="-t"
-		# Themes disabled for gnome-terminal
 			FGC=""
 			DUMPING_COLOR=""
 			INJECTION_COLOR=""
@@ -1790,19 +1578,22 @@ function setterminal {
 			DEAUTH_COLOR=""
 			BACKGROUND_COLOR=""
 			BGC=""
-			;;
+            ;;
 
-		screen | "screen" | "screen " )
-		# Now, we add modified functions file, to support screen
-			. $SCREEN_FUNCTIONS
-			echo "Screen functons loaded, replacing functions"
-			;;
-		airosperl ) 
-			airosperl
-			exit
-			;;
-
+		screen | "screen" | "screen " ) . $SCREEN_FUNCTIONS && echo "Screen functons loaded, replacing functions";;
+		airosperl ) airosperl & exit ;;
 	esac
+    [[ "$DEBUG" = "1" ]] && echo $TOPLEFT \
+				$TOPRIGHT \
+				$BOTTOMLEFT \
+				$BOTTOMRIGHT \
+				$TOPLEFTBIG \
+				$TOPRIGHTBIG \
+				$HOLDFLAG\
+				$TITLEFLAG\
+				$FGC\
+			    $BGC\
+				printf -- "$EXECFLAG \n"
 }
 
 
@@ -1819,38 +1610,24 @@ function debug {
 }
 
 function getterminal {
-	# TERMINAL var is on config if valid, use it, if not set it to defaults, if that fails, use environment terminal, and if that fails too, use xterm :-D, if xterm isnt available, giva a fatal warning and exit (who doesnt have a terminal?)
-
-# This is for parameter input.
-	if [ "$TERMINAL" = "GUI" ]; then
-		TERMINAL="airosperl"
-	else
-		if [ -x $TERMBIN/$TERMINAL ]
-		then
+    [[ "$TERMINAL" = "GUI" ]] && TERMINAL="airoscript"
+    if [ -x $TERMBIN/$TERMINAL ]; then
 			echo -en "\t`gettext \"Using configured terminal\"`"
-		else
-			echo -en "$TERMINAL was not used, not found on path"
-			echo -en '`gettext "Using default terminal"`' 
+	else
+		echo -en "$TERMINAL was not used, not found on path"
+		echo -en '`gettext "Using default terminal"`' 
 			TERMINAL=`ls -l1 /etc/alternatives/x-terminal-emulator|cut -d ">" -f 2|cut -d " " -f 2|head -n1`;        
-		fi      
 	fi
-                
-	if [ -x $TERMBIN/$TERMINAL ] # If there is an alternative for terminal select it.
-	then    
-		D="1" # I forgot what this is for :-P
-                echo " ($TERMINAL)" 
-                
-	else            
-		if [ -e $TERM ] 
-		then            
+
+	if [ -x $TERMBIN/$TERMINAL ] then D="1" && echo " ($TERMINAL)" 
+	else
+        if [ -e $TERM ]; then 
 			echo -e "`gettext \"Using environment defined terminal ($TERM)\n\"`"
 			TERMINAL=$TERM
-		else            
-			if [ -x "$TERMBIN/xterm" ]
-			then    
-				TERMINAL="xterm"
-				echo -e "Using Xterm\n"
-			else    
+		else
+            if [ -x "$TERMBIN/xterm" ]; then
+				TERMINAL="xterm" && echo -e "Using Xterm\n"
+			else
 			echo -e 
 				"`gettext \"I cant find any good terminal, please set one on your conffile
 				Your TERMINAL var contains no valid temrinal
@@ -1859,11 +1636,5 @@ function getterminal {
 				exit
 			fi
 		fi     
-
-	fi      
+	fi
 }
-
-
-###########################################
-########End of called directly from the menu.  ###########
-###########################################
