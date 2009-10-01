@@ -17,33 +17,25 @@
 
 CHOICES="1 2 3 4 5 6 7 8 9 10 11 12"
 
-if [ "$UNSTABLE" = "1" ] && [ -e $UNSTABLEF ]; then . $UNSTABLEF; fi
-if [ "$EXTERNAL" = "1" ] && [ -e $EXTF ]; then . $EXTF; fi
+
 
 function menu {
   echo -e "`gettext '
-  _________________Menu________________
-  ##        Select next action        ##
-  ## 1)  Scan    - Scan for target    ##
-  ## 2)  Select  - Select target      ##
-  ## 3)  Attack  - Attack target      ##
-  ## 4)  Crack   - Get target key     ##
-  ## 5)  Fakeauth- Auth with target   ##
-  ## 6)  Deauth  - Deauth from target ##
-  ## 7)  Others  - Various utilities  ##
-  ## 8)  Inject  - Jump to inj. menu  ##
-  ## 9)  Auto    - Does 1,2 and 3     ##
-  ## 10) Exit    - Quits              ##'`"
-if [ "$UNSTABLE" = "1" ]; then echo    "`gettext '  ## 11) Unstable- Not well tested    ##'`";fi
-echo -e "`gettext '  ##__________________________________##\n'`"
+  +----------------Menu----------------+
+  |         Select next action         |
+  |  1)  Scan    - Scan for target     |
+  |  2)  Select  - Select target       |
+  |  3)  Attack  - Attack target       |
+  |  4)  Crack   - Get target key      |
+  |  5)  Fakeauth- Auth with target    |
+  |  6)  Deauth  - Deauth from target  |
+  |  7)  Others  - Various utilities   |
+  |  8)  Inject  - Jump to inj. menu   |
+  |  9)  Auto    - Does 1,2 and 3      |
+  |  10) Exit    - Quits               |'`"
+if [ "$UNSTABLE" = "1" ]; then echo    "`gettext '  |  11) Unstable- Not well tested     |'`";fi
+echo -e "`gettext '  +------------------------------------+\n'`"
 }
-
-
-monmode(){
-	$iwconfig $1 |grep "Monitor" && if [ $? != 0 ]; then $AIRMON start $1 $2; fi
-}
-
-
 
 ## This is for SCAN (1) option: ###########################
 function choosetype {
@@ -1382,64 +1374,54 @@ function doauto {
 		witchattack	
 }
 
+checkforcemac() {
+    if [ $FORCE_MAC_ADDRESS -eq 1 ]; then $clear && echo "Warn: Not checking mac" && menu
+    else
+    	mac=`$MACCHANGER -s wlan0|awk {'print $3'}`
+	    if [ "$FAKE_MAC" != "$mac" ]; then wichchangemac;$clear;menu; fi
+    fi
+}
 
-#Called directly from the menu.
-
-checkforcemac(){
-if [ $FORCE_MAC_ADDRESS -eq 1 ]; then
-	$clear
-	echo "Warn: Not checking mac address"
-	menu
-else
-	echo -ne "Checking mac address...done"
-	mac=`$MACCHANGER -s wlan0|awk {'print $3'}`
-	if [ "$FAKE_MAC" != "$mac" ]; then
-		wichchangemac;$clear;menu
-	fi
-fi
+function guess_idata(){
+	AIROUTPUT=$($AIRMON $1 $WIFICARD|grep -A 1 $WIFICARD);
+	TYPE=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $2 $3}'`
+	DRIVER=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $4}'`
+	tmpwifi=`echo \"$AIROUTPUT\" | awk {'print $NF'} | cut -d ")" -f1`
+    #if [ "$wifi" =~ (.*)[0-9] ];  then WIFI=$tmpwifi; fi
 }
 
 function setinterface {
 	INTERFACES=`ip link|egrep "^[0-9]+"|cut -d ':' -f 2 |awk {'print $1'} |grep -v lo`
     if [ "$WIFI" = "" ]; then
+
+        # Select interface
 		echo -e "\n_____"`gettext 'Interface selection'`"_____"
 		PS3="`gettext 'Select your interface: '`"
-
 		select WIFI in $INTERFACES; do break; done
 		export WIFICARD=$WIFI
 
-		echo -e "______________________________\n"
-		echo -n `gettext 'Should I put it in monitor mode?'` " (Y/n) "
-
-        read answer
-			if [ "$answer" != "n" ]; then
-				AIROUTPUT=$($AIRMON start $WIFICARD|grep -A 1 $WIFICARD);
-				TYPE=`echo \"$AIROUTPUT\"  | grep monitor | awk '{print $2 $3}'`
-				DRIVER=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $4}'`
-				wifi=`echo \"$AIROUTPUT\"|awk {'print $NF'}|cut -d ")" -f1`
-                if [ "$wifi" =~ (.*)[0-9] ]; then WIFI=$wifi; fi
-			else
-				AIROUTPUT=`$AIRMON stop $WIFICARD`;
-				TYPE=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $2 $3}'`
-				DRIVER=`echo \"$AIROUTPUT\" | grep monitor | awk '{print $4}'`
-			fi
-
-		$clear
+        #Put interface in monmode
+		echo -e "\t__________________________________\n"
+		echo -ne `gettext '\t Should I put it in monitor mode?'` " (Y/n) "
+        ac="stop"; read answer; [[ "$anwser" != n ]] && ac="start" 
+        guess_idata $ac && $clear
 		echo  `gettext 'Interface used is :'` $WIFI\
 		`gettext 'Interface type is :'` "$TYPE ($DRIVER)"
-		testmac 
 
+        # Check mac
+		testmac
+
+        # Ask for airserv-ng
 		read -p "Do you want to use airserv-ng? [y/N] " var
 		if [ "$var" == "y" ]; then
-			export WIFICARD=$WIFI
-			read -p "Start a local server? [y/N] " var
+			export WIFICARD=$WIFI && read -p "Start a local server? [y/N] " var
 			if [ "$var" == "y" ]; then export WIFI="127.0.0.1:666" && $AIRSERV -d  $WIFICARD >/dev/null 2>1 & 
 			else read -p "Enter airserv-ng address [127.0.0.1:666]" WIFI
 				if [ "$WIFI" == "" ]; then export WIFI="127.0.0.1:666";fi
 			fi
 		fi
 
-		export IWIFI=$WIFI 
+		export IWIFI=$WIFI
 	else
 		echo -n `gettext 'Shall I put in monitor mode'` $WIFI "? (Y/n) "
 		read answer
@@ -1505,134 +1487,4 @@ function checkdir {
 }
 
 
-function reso {
-	while true; do
-		if [ "$resonset" = "" ]; then
-            echo -en "`gettext \"______Resolutions______\"`"
-            echo -n "##			    #"
-            "  #  1) 640x480 	    #"
-            "  #  2) 800x480        #"
-            "  #  3) 800x600        #"
-            "  #  4) 1024x768 	    #"
-            "  #  5) 1280x768 	    #"
-            "  #  6) 1280x1024	    #"
-            "  #  7) 1600x1200	    #"
-            "  #____________________#"
-            "Option: "
-read reson
-		fi
 
-		case $reson in
-			1 ) TLX="83";TLY="11";TRX="60";TRY="18";BLX="75";BLY="18";
-                BRX="27";BRY="17";bLX="100";bLY="30";bRX="54";bRY="25"; setterminal; break;;
-			2 ) TLX="90";TLY="11";TRX="60";TRY="18";BLX="78";BLY="26";
-                BRX="52";BRY="15";bLX="130";bLY="30";bRX="78";bRY="25"; setterminal; break;;
-			3 ) TLX="92";TLY="11";TRX="68";TRY="25";BLX="78";BLY="26";
-                BRX="52";BRY="15";bLX="92" ;bLY="39";bRX="78";bRY="24"; setterminal; break;;
-			4 ) TLX="92";TLY="14";TRX="68";TRY="25";BLX="92";BLY="36";
-                BRX="74";BRY="20";bLX="100";bLY="52";bRX="54";bRY="25"; setterminal; break;;
-			5 ) TLX="100";TLY="20";TRX="109";TRY="20";BLX="100";BLY="30";
-                BRX="109";BRY="20";bLX="100";bLY="52";bRX="109";bRY="30"; setterminal; break;;
-			6 ) TLX="110";TLY="35";TRX="99";TRY="40";BLX="110";BLY="35";
-                BRX="99";BRY="30";bLX="110";bLY="72";bRX="99";bRY="40"; setterminal; break;;
-			7 ) TLX="130";TLY="40";TRX="68";TRY="25";BLX="130";BLY="40";
-                BRX="132";BRY="35";bLX="130";bLY="85";bRX="132";bRY="48"; setterminal; break;;
-			* ) echo -e "`gettext \"Unknown response. Try again\"`"; sleep 1; $clear ;;
-		esac
-	done
-}
-
-function setterminal {
-	$clear && getterminal
-	echo -e "`gettext '\tIm going to set terminal options for your terminal now'`...`gettext 'done'`" 
-	case $TERMINAL in 
-		xterm|uxterm ) 
-			TOPLEFT="-geometry $TLX*$TLY+0+0 "
-			TOPRIGHT="-geometry $TRX*$TRY-0+0 "
-			BOTTOMLEFT="-geometry $BLX*$BLY+0-0 "
-			BOTTOMRIGHT="-geometry $BRX*$BRY-0-0 "
-			TOPLEFTBIG="-geometry $bLX*$bLY+0+0 "
-			TOPRIGHTBIG="-geometry $bLX*$bLY+0-0 "
-			HOLDFLAG="-hold"
-			TITLEFLAG="-T"
-			FGC="-fg"
-			BGC="-bg"
-			EXECFLAG="-e"
-		
-		gnome-terminal|gnome-terminal.wrapper ) 
-			TOPLEFT="-geometry=$TLX*$TLY+0+0 "
-			TOPRIGHT="-geometry=$TRX*$TRY-0+0 "
-			BOTTOMLEFT="-geometry=$BLX*$BLY+0-0 "
-			BOTTOMRIGHT="-geometry=$BRX*$BRY-0-0 "
-			TOPLEFTBIG="-geometry=$bLX*$bLY+0+0 "
-			TOPRIGHTBIG="-geometry=$bLX*$bLY+0-0 "
-			EXECFLAG="-e "
-			HOLDFLAG="" 
-			TITLEFLAG="-t"
-			FGC=""
-			DUMPING_COLOR=""
-			INJECTION_COLOR=""
-			ASSOCIATION_COLOR=""
-			DEAUTH_COLOR=""
-			BACKGROUND_COLOR=""
-			BGC=""
-            ;;
-
-		screen | "screen" | "screen " ) . $SCREEN_FUNCTIONS && echo "Screen functons loaded, replacing functions";;
-		airosperl ) airosperl & exit ;;
-	esac
-    [[ "$DEBUG" = "1" ]] && echo $TOPLEFT \
-				$TOPRIGHT \
-				$BOTTOMLEFT \
-				$BOTTOMRIGHT \
-				$TOPLEFTBIG \
-				$TOPRIGHTBIG \
-				$HOLDFLAG\
-				$TITLEFLAG\
-				$FGC\
-			    $BGC\
-				printf -- "$EXECFLAG \n"
-}
-
-
-# this function allows debugging, called from main menu.
-function debug {
-	if [ "$DEBUG" = "1" ]
-	then
-		export HOLD=$HOLDFLAG
-		echo "`gettext \" 	Debug Mode enabled, you\'ll have to manually close windows\"`"
-		
-	else
-		export HOLD=""
-	fi
-}
-
-function getterminal {
-    [[ "$TERMINAL" = "GUI" ]] && TERMINAL="airoscript"
-    if [ -x $TERMBIN/$TERMINAL ]; then
-			echo -en "\t`gettext \"Using configured terminal\"`"
-	else
-		echo -en "$TERMINAL was not used, not found on path"
-		echo -en '`gettext "Using default terminal"`' 
-			TERMINAL=`ls -l1 /etc/alternatives/x-terminal-emulator|cut -d ">" -f 2|cut -d " " -f 2|head -n1`;        
-	fi
-
-	if [ -x $TERMBIN/$TERMINAL ] then D="1" && echo " ($TERMINAL)" 
-	else
-        if [ -e $TERM ]; then 
-			echo -e "`gettext \"Using environment defined terminal ($TERM)\n\"`"
-			TERMINAL=$TERM
-		else
-            if [ -x "$TERMBIN/xterm" ]; then
-				TERMINAL="xterm" && echo -e "Using Xterm\n"
-			else
-			echo -e 
-				"`gettext \"I cant find any good terminal, please set one on your conffile
-				Your TERMINAL var contains no valid temrinal
-				Your alternative against x-terminal-emulator contains no terminal
-				Xterm can\'t be found on your system, Maybe not in /usr/bin?\n\"`"
-				exit
-			fi
-		fi     
-	fi
-}
