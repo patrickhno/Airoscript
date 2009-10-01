@@ -86,11 +86,11 @@ while true; do
 	||
 	\/
   ______________Channel________________
-  ##      Select channel to use      ##
-  ##                                 ##
-  ##   1) Channel Hopping            ##
-  ##   2) Specific channel(s)        ##
-  ##_________________________________##
+  #       Select channel to use       #
+  #                                   #
+  #    1) Channel Hopping             #
+  #    2) Specific channel(s)         #
+  #___________________________________#
   Option number:'`"
   read yn
   case $yn in
@@ -113,13 +113,13 @@ done
 		||
 		\/
 	  _____________Channel Input___________
-	  ##      Please input channel       ##
-	  ##				     ##
-	  ##         You can insert:         ##
-	  ##  A single number   6            ##
-	  ##  A range           1-5          ##
-	  ##  Multiple channels 1,1,2,5-7,11 ##
-	  ##_________________________________##
+	  #       Please input channel        #
+	  # 				                  #
+	  #          You can insert:          #
+	  #   A single number   6             #
+	  #   A range           1-5           #
+	  #   Multiple channels 1,1,2,5-7,11  #
+	  #___________________________________#
 	  '`"
 		read channel_number
 		echo -e "`gettext \"You typed: $channel_number\"`"
@@ -177,14 +177,14 @@ while true; do
 
   echo -n -e  "`gettext '
   ___________Client selection__________
-  ## Do you want to select a client? ##
-  ##                                 ##
-  ##   1) Yes, only associated       ##
-  ##   2) No i dont want to          ##
-  ##   3) Try to detect some         ##
-  ##   4) Yes show me the clients    ##
-  ##   5) Correct the SSID first     ##
-  ##_________________________________##
+  #  Do you want to select a client?  #
+  #                                   #
+  #    1) Yes, only associated        #
+  #    2) No i dont want to           #
+  #    3) Try to detect some          #
+  #    4) Yes show me the clients     #
+  #    5) Correct the SSID first      #
+  #___________________________________#
   Option: '`"
   read yn
   case $yn in
@@ -207,11 +207,11 @@ done
 		||
 		\/
 	  ___________Client selection_________
-	  ##                                 ##
-	  ##       Select client now         ##
-	  ##  These clients are connected to ##
-	  ##          $Host_SSID             ##
-	  ##_________________________________##'`"
+	  #                                   #
+	  #        Select client now          #
+	  #   These clients are connected to  #
+	  #           $Host_SSID              #
+	  #___________________________________#'`"
 		select CLIENT in $HOST;
 			do
 			export Client_MAC=` echo $CLIENT | awk '{
@@ -235,11 +235,11 @@ done
 		||
 		\/
 	  ____________Client selection_________
-	  ##  Did you find desired client?   ##
-	  ##                                 ##
-	  ##   1) Yes, someone associated    ## 
-	  ##   2) No, no clients showed up   ##
-	  ##_________________________________##'`"
+	  #   Did you find desired client?    #
+	  #                                   #
+	  #    1) Yes, someone associated     # 
+	  #    2) No, no clients showed up    #
+	  #___________________________________#'`"
 		  read yn
 		  case $yn in
 	            1 ) listsel3 ; break ;;
@@ -256,12 +256,12 @@ done
 		    ||
 		    \/
 		 __________Client selection__________
-		 ##                                 ##
-		 ##       Select client now         ##
-		 ##  These clients are connected to ##
-	 	 ##          $Host_SSID             ##
-		 ##                                 ##
-		 ##_________________________________##\"`"
+		 #                                   #
+		 #        Select client now          #
+		 #   These clients are connected to  #
+	 	 #           $Host_SSID              #
+		 #                                   #
+		 #___________________________________#\"`"
 				select CLIENT in $HOST;
 				do
 					export Client_MAC=` echo $CLIENT | awk '{
@@ -277,13 +277,13 @@ done
 		  $clear
 		  echo -n "`gettext '
 	  ___________Client selection_________
-	  ##      Select next step          ##
-	  ##                                ##
-	  ##   1) Detected clients          ##
-	  ##   2) Manual Input              ##
-	  ##   3) Associated client list    ##
-	  ##                                ##
-	  ##________________________________##
+	  #       Select next step           #
+	  #                                  #
+	  #    1) Detected clients           #
+	  #    2) Manual Input               #
+	  #    3) Associated client list     #
+	  #                                  #
+	  #__________________________________#
 	  Option: '`"
 		  read yn
 		  echo ""
@@ -305,11 +305,11 @@ done
 		  ||
 		  \/
 		____________Client selection_________
-		##      Select next step           ##
-		##                                 ##
-		##   1) Clients of $Host_SSID      ##
-		##   2) Full list (all MACs)       ##
-		##_________________________________##
+		#       Select next step            #
+		#                                   #
+		#    1) Clients of $Host_SSID       #
+		#    2) Full list (all MACs)        #
+		#___________________________________#
 		Option: \"`"
 				
 				if [ "$Host_SSID" = $'\r' ]
@@ -336,9 +336,9 @@ done
 			 ||
 			 \/
 			_________Client selection____________
-			##                                 ##
-			##       Select client now         ##
-			##_________________________________##
+			#                                   #
+			#        Select client now          #
+			#___________________________________#
 			Option: '`"
 				select CLIENT in $HOST;
 				do
@@ -355,9 +355,9 @@ done
 			||
 			\/
 			__________Client selection___________
-			##                                 ##
-			##   Type in client mac now        ##
-			##_________________________________##
+			#                                   #
+			#    Type in client mac now         #
+			#___________________________________#
 			MAC: '`"
 			read Client_MAC
 			set -- ${Client_MAC}
@@ -376,30 +376,30 @@ function witchattack {
 	  $clear
 	  echo -e -n "`gettext '
 	  ___________WEP ATTACKS________________
-	  ##  Attacks not using a client      ##
-	  ##				      ##
-	  ##  1)  Fake auth => Automatic      ##
-	  ##  2)  Fake auth => Interactive    ##
-	  ##  3)  Fragmentation attack        ##
-	  ##  4)  Chopchop attack             ##
-	  ##  5)  Cafe Latte attack           ##
-	  ##  6)  Hirte attack                ##
-	  ##__________________________________##
-	  ##				      ##
-	  ##  Attacks using a client          ##
-	  ##				      ##
-	  ##  7)  ARP replay => Automatic     ##
-	  ##  8)  ARP replay => Interactive   ##
-	  ##  9)  Fragmentation attack        ##
-	  ## 10)  Frag. attack on client      ##
-	  ## 11)  Chopchop attack             ##
-	  ##__________________________________##
-	  ##				      ##
-	  ## Injection if xor file generated  ##
-	  ##				      ## 
-	  ## 12) ARP inject from xor (PSK)    ##
-	  ## 13) Return to main menu          ##
-	  ##__________________________________##
+	  #   Attacks not using a client       #
+	  # 				                   #
+	  #   1)  Fake auth => Automatic       #
+	  #   2)  Fake auth => Interactive     #
+	  #   3)  Fragmentation attack         #
+	  #   4)  Chopchop attack              #
+	  #   5)  Cafe Latte attack            #
+	  #   6)  Hirte attack                 #
+	  # __________________________________ #
+	  #                                    #
+	  #   Attacks using a client           #
+	  #                                    #
+	  #   7)  ARP replay => Automatic      #
+	  #   8)  ARP replay => Interactive    #
+	  #   9)  Fragmentation attack         #
+	  #  10)  Frag. attack on client       #
+	  #  11)  Chopchop attack              #
+	  # __________________________________ #
+	  #                                    #
+	  #  Injection if xor file generated   #
+	  #                                    # 
+	  #  12) ARP inject from xor (PSK)     #
+	  #  13) Return to main menu           #
+	  #____________________________________#
 	  Option: '`"
 	  read yn
 	  echo ""
@@ -607,13 +607,13 @@ function witchcrack {
 	||
 	\/
 	_____________________________________
-	##      WEP/WPA CRACKING OPTIONS   ##
-	##                                 ##
-	##   1) Use Wlandecrypter          ##
-	##   2) Use Jazzteldecrypter	   ##	
-	##   3) Use aircrack-ng            ##
-	##   4) Return to main menu        ##
-	##_________________________________##
+	#       WEP/WPA CRACKING OPTIONS    #
+	#                                   #
+	#    1) Use Wlandecrypter           #
+	#    2) Use Jazzteldecrypter	    #	
+	#    3) Use aircrack-ng             #
+	#    4) Return to main menu         #
+	#___________________________________#
 	Option:'`"
 
 					read yn
@@ -653,13 +653,13 @@ function selectcracking {
 		while true; do
 		echo -e -n "`gettext '
 		_____________________________________
-		##      WEP CRACKING OPTIONS       ##
-		##                                 ##
-		##   1) aircrack-ng PTW attack     ##
-		##   2) aircrack-ng standard       ##
-		##   3) aircrack-ng user options   ##
-		##                                 ##
-		##_________________________________##
+		#       WEP CRACKING OPTIONS        #
+		#                                   #
+		#    1) aircrack-ng PTW attack      #
+		#    2) aircrack-ng standard        #
+		#    3) aircrack-ng user options    #
+		#                                   #
+		#___________________________________#
 		Option: '`"
 		read yn
 		case $yn in
@@ -716,12 +716,12 @@ else
 	||
 	\/	
 ______________Fake auth______________
-##   Select fakeauth method        ##
-##                                 ##
-##   1) Conservative               ##
-##   2) Standard                   ##
-##   3) Progressive                ##
-##_________________________________##
+#    Select fakeauth method         #
+#                                   #
+#    1) Conservative                #
+#    2) Standard                    #
+#    3) Progressive                 #
+#___________________________________#
 Option: '`"
 		read yn
 		case $yn in
@@ -761,12 +761,12 @@ else
 	||
 	\/	
 _____________________________________
-##   Who do you want to deauth ?   ##
-##                                 ##
-##   1) Everybody                  ##
-##   2) Myself (the Fake MAC)      ##
-##   3) Selected client            ##
-##_________________________________##
+#    Who do you want to deauth ?    #
+#                                   #
+#    1) Everybody                   #
+#    2) Myself (the Fake MAC)       #
+#    3) Selected client             #
+#___________________________________#
 Option: '`"
 	read yn
 	case $yn in
@@ -809,19 +809,19 @@ echo -e -n "`gettext '
 	||
 	\/	
 _____________________________________
-##  Select task to perform         ##
-##                                 ##
-##   1) Test injection             ##
-##   2) Select another interface   ##
-##   3) Reset selected interface   ##
-##   4) Change MAC of interface    ##
-##   5) Mdk3                       ##
-##   6) Wesside-ng                 ##
-##   7) Enable monitor mode        ##
-##   8) Checks with airmon-ng      ##
-##   9) Change DUMP_PATH	   ##
-##   10) Return to main menu       ##
-##_________________________________##
+#   Select task to perform          #
+#                                   #
+#    1) Test injection              #
+#    2) Select another interface    #
+#    3) Reset selected interface    #
+#    4) Change MAC of interface     #
+#    5) Mdk3                        #
+#    6) Wesside-ng                  #
+#    7) Enable monitor mode         #
+#    8) Checks with airmon-ng       #
+#    9) Change DUMP_PATH            #
+#    10) Return to main menu        #
+#___________________________________#
 Option: '`"
 	read yn
 	echo ""
@@ -895,12 +895,12 @@ Option: '`"
 	||
 	\/
 	_____________________________________
-	##      Select next step           ##
-	##                                 ##
-	##   1) Change MAC to FAKEMAC      ##
-	##   2) Change MAC to CLIENTMAC    ##
-	##   3) Manual Mac input           ##
-	##_________________________________##
+	#       Select next step            #
+	#                                   #
+	#    1) Change MAC to FAKEMAC       #
+	#    2) Change MAC to CLIENTMAC     #
+	#    3) Manual Mac input            #
+	#___________________________________#
 	Option: '`"
 			read yn
 			
@@ -1044,14 +1044,14 @@ Option: '`"
 				$clear
 				echo -n "`gettext '
 			_____________________________________
-			##   Choose MDK3 Options           ##
-			##                                 ##
-			##   1) Deauthentication           ##
-			##   2) Prob selected AP           ##
-			##   3) Select another target      ##
-			##   4) Authentication DoS         ##
-			##   5) Return to main menu        ##
-			##_________________________________##
+			#    Choose MDK3 Options            #
+			#                                   #
+			#    1) Deauthentication            #
+			#    2) Prob selected AP            #
+			#    3) Select another target       #
+			#    4) Authentication DoS          #
+			#    5) Return to main menu         #
+			#___________________________________#
 			Option: '`"
 
 				read yn
@@ -1130,15 +1130,15 @@ Option: '`"
 				$clear
 				echo -e -n "`gettext '
 	_____________________________________
-	##   Choose Wesside-ng Options     ##
-	##                                 ##
-	##   1) No arguments               ##
-	##   2) Selected target            ##
-	##   3) Sel. target max rertransmit #
-	##   4) Sel. target poor connection #
-	##   5) Select another target      ##
-	##   6) Return to main menu        ##
-	##_________________________________##
+	#    Choose Wesside-ng Options      #
+	#                                   #
+	#    1) No arguments                #
+	#    2) Selected target             #
+	#    3) Sel. target max rertransmit #
+	#    4) Sel. target poor connection #
+	#    5) Select another target       #
+	#    6) Return to main menu         #
+	#___________________________________#
 		Option: '`"
 			
 				read yn
@@ -1242,16 +1242,16 @@ function injectmenu {
 	while true; do
 		echo -n -e "`gettext '
 _____________________________________
-##  If previous step went fine     ##
-##  Select next, otherwise hit5    ##
-##                                 ##
-##   1) Frag injection             ##
-##   2) Frag with client injection ##
-##   3) Chochop injection          ##
-##   4) Chopchop with client inj.  ##
-##   5) Return to main menu        ##
-##                                 ##
-##_________________________________##
+#   If previous step went fine      #
+#   Select next, otherwise hit5     #
+#                                   #
+#    1) Frag injection              #
+#    2) Frag with client injection  #
+#    3) Chochop injection           #
+#    4) Chopchop with client inj.   #
+#    5) Return to main menu         #
+#                                   #
+#___________________________________#
 Option: '`"	
 		read yn
 		echo ""
@@ -1383,9 +1383,7 @@ function doauto {
 }
 
 
-###########################################
-#############Called directly from the menu.###########
-###########################################
+#Called directly from the menu.
 
 checkforcemac(){
 if [ $FORCE_MAC_ADDRESS -eq 1 ]; then
@@ -1511,15 +1509,15 @@ function reso {
 	while true; do
 		if [ "$resonset" = "" ]; then
             echo -en "`gettext \"______Resolutions______\"`"
-            echo -n "##			    ##"
-            "  ##  1) 640x480 	    ##"
-            "  ##  2) 800x480       ##"
-            "  ##  3) 800x600       ##"
-            "  ##  4) 1024x768 	    ##"
-            "  ##  5) 1280x768 	    ##"
-            "  ##  6) 1280x1024	    ##"
-            "  ##  7) 1600x1200	    ##"
-            "  ##___________________##"
+            echo -n "##			    #"
+            "  #  1) 640x480 	    #"
+            "  #  2) 800x480        #"
+            "  #  3) 800x600        #"
+            "  #  4) 1024x768 	    #"
+            "  #  5) 1280x768 	    #"
+            "  #  6) 1280x1024	    #"
+            "  #  7) 1600x1200	    #"
+            "  #____________________#"
             "Option: "
 read reson
 		fi
