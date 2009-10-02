@@ -1,7 +1,40 @@
 #!/bin/bash
+# Internal functions file for airoscript.
+# Requires: wlandecrypter 
+
+# Copyright (C) 2009 David Francos Cuartero
+#        This program is free software; you can redistribute it and/or
+#        modify it under the terms of the GNU General Public License
+#        as published by the Free Software Foundation; either version 2
+#        of the License, or (at your option) any later version.
+
+#        This program is distributed in the hope that it will be useful,
+#        but WITHOUT ANY WARRANTY; without even the implied warranty of
+#        MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#        GNU General Public License for more details.
+
+#        You should have received a copy of the GNU General Public License
+#        along with this program; if not, write to the Free Software
+#        Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+
+
+fill(){
+    # Ok so I've got the width, the width of the phrase and the status (center, filled)
+    # If center, it must print it in the middle of the spaces.
+    # If not, print *all* the spaces (or whatever char)
+echo " $1 "
+}
+
+mkmenu(){
+    separator="|" # FIXME send this to conffile.
+    menu_w=$1 && shift; menu_t=$1 && shift
+    fill "$menu_t" "$separator" center
+    for i in "${@}"; do echo "$separator"`fill "$i" " " center`"$separator"; done
+    fill "$menu_t" "$separator" filled
+}
 
 monmode(){ $iwconfig $1 |grep "Monitor" && if [ $? != 0 ]; then $AIRMON start $1 $2; fi;}
-function reso {
+reso() {
 	while true; do
 		if [ "$resonset" = "" ]; then
             echo -en "`gettext \"   ______Resolutions_____\"`"
