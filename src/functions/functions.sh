@@ -35,7 +35,7 @@ function menu {
   |  10) Exit    - Quits               |'`"
 if [ "$UNSTABLE" = "1" ]; then echo    "`gettext '  |  11) Unstable- Not well tested     |'`";fi
 echo -e "`gettext '  +------------------------------------+\n'`"
-export PS3 = "`gettext 'Select option: '`"
+export PS3="`gettext 'Select option: '`"
 }
 
 ## This is for SCAN (1) option: ###########################
