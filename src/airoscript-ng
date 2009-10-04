@@ -23,7 +23,7 @@
 
 
 # Sets ps3, wich will be shown after input in the select	
-$clear
+clear
 PS3=`gettext 'Input number: '`
 
 function confwarn {
@@ -36,6 +36,12 @@ Defaults on /etc/airoscript-ng.conf should be ok so you can
 safely remove your ~/.airoscript-ng.conf\n\n
 Do you really want to do it (yes/No): '`"
 }
+
+warntext="
+Airoscript is provided under the gpl. \n
+I'm not responsible of the use anyone can give to airoscript, \n
+airoscript is written for educational purpose in mind.
+"
 
 # Die if no root.
 li=`tput lines`; cen=`expr $li / 2 + 2`; if [ "$UID" != 0 ]; then clear;echo -e "\E[3;22H===airoscript-ng===\E[$cen;15H\E[31mYou Must be root to use airoscript\E[39;49;00m\E[$li;20H"; exit 1; fi; 
@@ -86,7 +92,7 @@ cd $DUMP_PATH
 
 if [ $SHOW_airoscript_WARNING ]
 then
-	echo $warntext # TODO put text here, and also, show_airscript_warning on config file.
+	echo -e $warntext 
 fi
 
 # Now, if terminal is provided by $1, replace terminal from config with $1
