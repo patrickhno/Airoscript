@@ -35,6 +35,7 @@ function menu {
   |  10) Exit    - Quits               |'`"
 if [ "$UNSTABLE" = "1" ]; then echo    "`gettext '  |  11) Unstable- Not well tested     |'`";fi
 echo -e "`gettext '  +------------------------------------+\n'`"
+export PS3 = "`gettext 'Select option: '`"
 }
 
 ## This is for SCAN (1) option: ###########################
@@ -51,7 +52,7 @@ while true; do $clear
 |    4) WPA                         |
 |    5) WPA1                        |
 |    6) WPA2                        |
-|    7) Return to main menu	        |
+|    7) Return to main menu         |
 |                                   |
 +-----------------------------------+
 Option number: ' `"
@@ -74,9 +75,9 @@ done
 function choosescan {
 while true; do
   echo -e -n " `gettext '
-	||
-	||
-	\/
+    ||
+    ||
+    \/
   ______________Channel________________
   #       Select channel to use       #
   #                                   #
@@ -101,18 +102,18 @@ done
 
 	function Scanchan {
 	  echo -e "\n `gettext '
-		||
-		||
-		\/
-	  _____________Channel Input___________
-	  #       Please input channel        #
-	  # 				                  #
-	  #          You can insert:          #
-	  #   A single number   6             #
-	  #   A range           1-5           #
-	  #   Multiple channels 1,1,2,5-7,11  #
-	  #___________________________________#
-	  '`"
+        ||
+        ||
+        \/
+      _____________Channel Input___________
+      #       Please input channel        #
+      #                                   #
+      #          You can insert:          #
+      #   A single number   6             #
+      #   A range           1-5           #
+      #   Multiple channels 1,1,2,5-7,11  #
+      #___________________________________#
+   '`"
 		read channel_number
 		echo -e "`gettext \"You typed: $channel_number\"`"
 		set -- ${channel_number}
@@ -369,7 +370,7 @@ function witchattack {
 	  echo -e -n "`gettext '
 	  ___________WEP ATTACKS________________
 	  #   Attacks not using a client       #
-	  # 				                   #
+	  #                                    #
 	  #   1)  Fake auth => Automatic       #
 	  #   2)  Fake auth => Interactive     #
 	  #   3)  Fragmentation attack         #
@@ -602,7 +603,7 @@ function witchcrack {
 	#       WEP/WPA CRACKING OPTIONS    #
 	#                                   #
 	#    1) Use Wlandecrypter           #
-	#    2) Use Jazzteldecrypter	    #	
+	#    2) Use Jazzteldecrypter        #	
 	#    3) Use aircrack-ng             #
 	#    4) Return to main menu         #
 	#___________________________________#
