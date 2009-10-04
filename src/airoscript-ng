@@ -38,9 +38,7 @@ Do you really want to do it (yes/No): '`"
 }
 
 warntext="
-Airoscript is provided under the gpl. \n
-I'm not responsible of the use anyone can give to airoscript, \n
-airoscript is written for educational purpose in mind.
+Airoscript is provided under the gpl.\nI'm not responsible of the use anyone can give to airoscript,\nAiroscript is written for educational purpose in mind.
 "
 
 # Die if no root.
@@ -87,7 +85,7 @@ if [ -e ~/.airoscript-ng/airoscript-ng.conf ];
 			fi
 		fi
 fi
-if [ $DEBUG ]; then echo "Text domain dir is $TEXTDOMAINDIR and textdomain is $TEXTDOMAIN" ;fi
+if [ "$DEBUG"  == 1 ]; then echo "Text domain dir is $TEXTDOMAINDIR and textdomain is $TEXTDOMAIN" ;fi
 cd $DUMP_PATH
 
 
@@ -114,7 +112,7 @@ checkdir
 
 if [ $SHOW_airoscript_WARNING ]
 then
-	echo -e $warntext 
+	echo -e $warntext"\n"
 fi
 
 if [ "$TERMINAL" = "screen" ]

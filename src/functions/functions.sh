@@ -1481,10 +1481,14 @@ function target {
    AP Encryption =$Host_ENC
    AP Speed      =$Host_SPEED
   ________________________________\"`"
-}  
+}
 
 function checkdir {
-    if [ -d $DUMP_PATH ]; then echo -e "`gettext \"[INFO] Output folder is $DUMP_PATH\"`";fi
+    if [ -d $DUMP_PATH ]; then 
+        if [ "$DEBUG" == 1 ]; then
+            echo -e "`gettext \"[INFO] Output folder is $DUMP_PATH\"`";
+        fi
+    fi
 }
 
 
