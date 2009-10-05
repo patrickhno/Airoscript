@@ -23,8 +23,7 @@
 
 
 # Sets ps3, wich will be shown after input in the select	
-clear
-PS3=`gettext 'Input number: '`
+clear && PS3=`gettext 'Input number: '`
 
 function confwarn {
 echo -n -e "`gettext 'Youre going to use a config file on your home or current dir. 
@@ -45,60 +44,31 @@ Airoscript is provided under the gpl.\nI'm not responsible of the use anyone can
 li=`tput lines`; cen=`expr $li / 2 + 2`; if [ "$UID" != 0 ]; then clear;echo -e "\E[3;22H===airoscript-ng===\E[$cen;15H\E[31mYou Must be root to use airoscript\E[39;49;00m\E[$li;20H"; exit 1; fi; 
 
 # Get config.
-if [ -e ~/.airoscript-ng/airoscript-ng.conf ];
-	then 	
-		if [ $HOME != "/root" ]
-		then
-			confwarn
-			read response
-			if [ "$response" = "yes" ]
-				then
-					. ~/.airoscript-ng/airoscript-ng.conf
-				else
-					echo `gettext "Ok, please remove/rename your $HOME/.airoscript-ng/airoscript-ng.conf"`
-					exit
-			fi
-		else
-			. ~/.airoscript-ng/airoscript-ng.conf
-		fi
+if [ -e ~/.airoscript-ng/airoscript-ng.conf ]; then	
+		if [ $HOME != "/root" ]; then confwarn; read response
+			if [ "$response" = "yes" ]; then . ~/.airoscript-ng/airoscript-ng.conf
+			else echo `gettext "Ok, please remove/rename your $HOME/.airoscript-ng/airoscript-ng.conf"`; exit; fi
+		else . ~/.airoscript-ng/airoscript-ng.conf ; fi
 	else
-		if [ -e /etc/airoscript-ng.conf ]; then
-			. /etc/airoscript-ng.conf
+		if [ -e /etc/airoscript-ng.conf ]; then . /etc/airoscript-ng.conf
 		else
-			if [ -e /usr/local/etc/airoscript-ng.conf ]; then
-				. /usr/local/etc/airoscript-ng.conf
+			if [ -e /usr/local/etc/airoscript-ng.conf ]; then . /usr/local/etc/airoscript-ng.conf
 			else
 				if [ -e airoscript-ng.conf ]; then
-					confwarn
-					read response
-					if [ "$response" = "yes" ]
-					then
-						. airoscript-ng.conf
-					else
-						echo -e `gettext "Ok, please remove/rename your $HOME/.airoscript-ng.conf"`
-						exit
-					fi
-				else
-					echo -e `gettext "Error, no config file found, quitting"`
-					exit
-				fi
+					confwarn ; read response
+					if [ "$response" = "yes" ]; then . airoscript-ng.conf
+					else echo -e `gettext "Ok, please remove/rename your $HOME/.airoscript-ng.conf"`; exit; fi
+				else echo -e `gettext "Error, no config file found, quitting"`; exit; fi
 			fi
 		fi
 fi
-if [ "$DEBUG"  == 1 ]; then echo "Text domain dir is $TEXTDOMAINDIR and textdomain is $TEXTDOMAIN" ;fi
+
 cd $DUMP_PATH
-
-
-
-# Now, if terminal is provided by $1, replace terminal from config with $1
 if [ "$1" != "" ] ; then export TERMINAL=$1; fi
-
-
-# include functions, functions value is on config file.
 [[ -e $IFUNCTIONS ]] && . $IFUNCTIONS 
 [[ -e $FUNCTIONS ]] && . $FUNCTIONS 
 
-# get theme, theme value is on config file
+if [ "$DEBUG"  == 1 ]; then echo "Text domain dir is $TEXTDOMAINDIR and textdomain is $TEXTDOMAIN" ;fi
 if [ -e $THEMEDIR/$THEME.theme ]; then . $THEMEDIR/$THEME.theme 
 else
 	echo -e "`gettext '[WARN] : theme file does not exists, using defaults...'`\n" 
@@ -106,133 +76,35 @@ else
 	ASSOCIATION_COLOR="#FF0009"; DEAUTH_COLOR="#99CCFF"; BACKGROUND_COLOR="#000000"
 fi
 
-
-#checks if output dir exists, if not, it creates it.
 checkdir
 
-if [ $SHOW_airoscript_WARNING ]
-then
-	echo -e $warntext"\n"
-fi
-
-if [ "$TERMINAL" = "screen" ]
-then
-	if [ -e ~/.airoscript-ng/screen_has_started ]
-	then
-		rm ~/.airoscript-ng-ng/screen_has_started
+if [ $SHOW_airoscript_WARNING ]; then echo -e $warntext"\n"; fi
+if [ "$TERMINAL" = "screen" ] ; then
+	if [ -e ~/.airoscript-ng/screen_has_started ]; then rm ~/.airoscript-ng-ng/screen_has_started
 	else
 		touch ~/.airoscript-ng/screen_has_started
 		screen -S airoscript-ng -c $SCREENRC $0 screen
-		$clear
-		echo `gettext 'airoscript-ng is terminating...'`
-		exit
+		$clear && echo `gettext 'airoscript-ng is terminating...'`; exit
 	fi
-
-
 fi
 
-#Ask for screen size
 reso
-
-#runs debug routine to set $HOLD value
 debug
-
-#checks if interface is set, if not it ask you
 setinterface
-
-# Checks if mac is fakemac
 checkforcemac
 
-select choix in $CHOICES; do					
-	if [ "$choix" = "1" ]; then
-		choosetype
-		$clear
-		menu			
-
-	elif [ "$choix" = "2" ]; then
-		if [ -e $DUMP_PATH/dump-01.csv ]	
-		then
-			Parseforap
-			$clear
-			if [ "$Host_SSID" = $'\r' ]
-	 			then blankssid;
-			elif [ "$Host_SSID" = "No SSID has been detected" ]
-				then blankssid;
-			fi
-			target
-			choosetarget
-			$clear
-			menu
-		else
-			$clear
-			echo "`gettext 'ERROR: You have to scan for targets first'`"
-			menu
-		fi
-
-	elif [ "$choix" = "3" ]; then
-		witchattack	
-		menu
-
-	elif [ "$choix" = "4" ]; then
-		witchcrack
-		menu	
-
-	elif [ "$choix" = "5" ]; then
-		choosefake && menu	
-
-	elif [ "$choix" = "6" ]; then	
-		choosedeauth
-		menu
-
-	elif [ "$choix" = "7" ]; then
-		optionmenu
-		menu
-
-	elif [ "$choix" = "8" ]; then
-		injectmenu
-		menu
-	elif [ "$choix" = "9" ]; then
-		doauto
-		menu
-
-	elif [ "$choix" = "10" ]; then
-		echo -n `gettext "	Do you want me to stop monitor mode on $WIFI? (y/N) "`
-		echo -n " "
-		read dis
-		if [ "$dis" = "y" ]
-		then
-			echo -n `gettext 'Deconfiguring interface...'` 
-			echo -n " "
-			airmon-ng stop $WIFI > /dev/null
-			echo "`gettext 'done'`"
-		fi
-		echo -n `gettext 'Do you want me to delete temporary data dir? (y/N) '`
-		echo -n " "
-		read del
-
-		if [ "$del" = "y" ]
-		then
-			echo -n `gettext 'Deleting'` " $DUMP_PATH ... "
-			rm -r $DUMP_PATH 2>/dev/null
-			rm *.cap 2>/dev/null
-			echo `gettext 'done'`
-		fi
-
-		exit
-
-	elif [ "$choix"="11" ]; then
-		if [ $UNSTABLE = "1" ]; then
-			$clear
-			unstablemenu
-			menu
-		else
-			$clear
-			echo "`gettext 'ERROR: Wrong number entered'`"
-			menu
-		fi
-	else
-		$clear
-		echo "`gettext 'ERROR: Wrong number entered'`"
-		menu
-	fi
+select choix in $CHOICES; do
+	if   [ "$choix" = "1"  ]; then choosetype
+	elif [ "$choix" = "2"  ]; then select_ap
+	elif [ "$choix" = "3"  ]; then witchattack
+	elif [ "$choix" = "4"  ]; then witchcrack
+	elif [ "$choix" = "5"  ]; then choosefake && menu
+	elif [ "$choix" = "6"  ]; then choosedeauth
+	elif [ "$choix" = "7"  ]; then optionmenu
+	elif [ "$choix" = "8"  ]; then injectmenu
+	elif [ "$choix" = "9"  ]; then doauto
+    elif [ "$choix" = "10" ]; then doexit
+	elif [ "$choix" = "11" ]; then if [ $UNSTABLE = "1" ]; then $clear && unstablemenu; fi
+	else $clear && echo "`gettext 'ERROR: Wrong number entered'`"; fi
+menu
 done
