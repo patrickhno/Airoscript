@@ -1,6 +1,6 @@
 #!/bin/bash
 # Internal functions file for airoscript.
-# Requires: wlandecrypter 
+# Recommends: wlandecrypter 
 
 # Copyright (C) 2009 David Francos Cuartero
 #        This program is free software; you can redistribute it and/or
@@ -19,18 +19,22 @@
 
 
 fill(){
-    # Ok so I've got the width, the width of the phrase and the status (center, filled)
-    # If center, it must print it in the middle of the spaces.
-    # If not, print *all* the spaces (or whatever char)
+    menu_w="$3"; separator="$2"; title="$1"; status="$4"; len_1=${#title}
+    if [ $status == "center" ];then
+        half_len_1=$(( $len_1 / 2 )) ; loop_times=$(( $menu_w / 2 - $half_len_1 ))
+        for i in `seq 1 $loop_times`; do print "$separator" ;done
+            print $title
+        for i in `seq 1 $loop_times`; do print "$separator" ;done
+    elif [ $status == "fill" ]; then for i in `seq 1 $loop_times`; do print $title ;done
+    fi
 echo " $1 "
 }
 
-mkmenu(){
-    separator="|" # FIXME send this to conffile.
-    menu_w=$1 && shift; menu_t=$1 && shift
-    fill "$menu_t" "$separator" center
-    for i in "${@}"; do echo "$separator"`fill "$i" " " center`"$separator"; done
-    fill "$menu_t" "$separator" filled
+mkmenu(){ # with title arguments to send.
+    separator="|"; menu_w=$1 && shift; menu_t=$1 && shift
+    fill "$menu_t" "$separator_h" "$menu_w" center
+    for i in "${@}"; do echo "$separator_v"`fill "$i" " " "$menu_w" "center"`"$separator_v"; done
+    fill "$menu_t" "$separator_h" "$menu_w" filled
 }
 
 monmode(){ $iwconfig $1 |grep "Monitor" && if [ $? != 0 ]; then $AIRMON start $1 $2; fi;}
@@ -38,7 +42,7 @@ reso() {
 	while true; do
 		if [ "$resonset" = "" ]; then
             echo -en "`gettext \"   ______Resolutions_____\"`"
-            echo -e "\n   #                    #\n"\
+            echo -en "\n   #                    #\n"\
             "  #  1) 640x480        #\n"\
             "  #  2) 800x480        #\n"\
             "  #  3) 800x600        #\n"\
@@ -47,7 +51,7 @@ reso() {
             "  #  6) 1280x1024      #\n"\
             "  #  7) 1600x1200      #\n"\
             "  #____________________#\n"\
-            "Option: \n"
+            "Option: "
 read reson
 		fi
 
@@ -164,6 +168,34 @@ function getterminal {
 			fi
 		fi     
 	fi
+}
+
+select_ap(){
+		if [ -e $DUMP_PATH/dump-01.csv ]; then
+			Parseforap; $clear
+			if [ "$Host_SSID" = $'\r' ]; then blankssid;
+			elif [ "$Host_SSID" = "No SSID has been detected" ]; then blankssid; fi
+			target; choosetarget; $clear
+		else $clear && echo "`gettext 'ERROR: You have to scan for targets first'`"; fi
+}
+
+doexit(){
+		echo -n `gettext "	Do you want me to stop monitor mode on $WIFI? (y/N) "`
+		read dis
+		if [ "$dis" = "y" ]; then
+			echo -n `gettext 'Deconfiguring interface...'` 
+			airmon-ng stop $WIFI > /dev/null
+			echo "`gettext 'done'`"
+		fi
+		echo -n `gettext 'Do you want me to delete temporary data dir? (y/N) '`; read del
+
+		if [ "$del" = "y" ]; then
+			echo -n `gettext 'Deleting'` " $DUMP_PATH ... "
+			rm -r $DUMP_PATH 2>/dev/null *.cap 2>/dev/null
+			echo `gettext 'done'`
+		fi
+		exit
+
 }
 
 if [ "$UNSTABLE" = "1" ] && [ -e $UNSTABLEF ]; then . $UNSTABLEF; fi
