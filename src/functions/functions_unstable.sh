@@ -15,6 +15,4 @@
 #        Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA. 
 
 echo -e "\tUnstable functions from airoscript loaded,\n\tif you don't want this, set UNSTABLE=0 in\n\tconfig file"
-unstablemenu(){
-	echo -e `gettext 'No unstable menu defined at this time, luckily, there arent unstable functions'`
-}
+unstablemenu(){ echo -e `gettext 'No unstable menu defined at this time, luckily, there arent unstable functions'`; }
