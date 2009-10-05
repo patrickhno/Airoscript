@@ -17,9 +17,7 @@
 
 	#Subproducts of choosescan.
 	function Scan {
-		clear
-		rm -rf $DUMP_PATH/dump*
-
+		clear && rm -rf $DUMP_PATH/dump*
 		$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen 
 		$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$AIRODUMP -w $DUMP_PATH/dump --encrypt $ENCRYPT -a $WIFI "  
 	}
@@ -83,9 +81,7 @@
 
 		#Option 9 (fragmentation attack)
 		function fragmentationattack {
-			rm -rf fragment-*.xor
-			rm -rf $DUMP_PATH/frag_*.cap
-			rm -rf $DUMP_PATH/$Host_MAC*
+			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
 			killall -9 airodump-ng aireplay-ng
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$$AIREPLAY -5 -b $Host_MAC -h $Client_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $WIFI" & capture &  injectmenu
@@ -93,18 +89,14 @@
 
 		#Option 10 (fragmentation attack with client)
 		function fragmentationattackclient {
-			rm -rf fragment-*.xor
-			rm -rf $DUMP_PATH/frag_*.cap
-			rm -rf $DUMP_PATH/$Host_MAC*
+			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
 			killall -9 airodump-ng aireplay-ng
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$AIREPLAY -7 -b $Host_MAC -h $Client_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $WIFI" & capture &  injectmenu
 		}
 		#Option 11
 		function chopchopattackclient {
-			clear
-			rm -rf $DUMP_PATH/$Host_MAC*
-			rm -rf replay_dec-*.xor
+			clear && rm -rf $DUMP_PATH/$Host_MAC* replay_dec-*.xor
 			capture & $CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$AIREPLAY --chopchop -h $Client_MAC $WIFI" & injectmenu
 		}
@@ -118,8 +110,7 @@
 
 	# If wpa
 	function wpahandshake {
-		clear
-		rm -rf $DUMP_PATH/$Host_MAC*
+		clear && rm -rf $DUMP_PATH/$Host_MAC*
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI" & menufonction
 	}
@@ -136,14 +127,8 @@
 		}
 	
 		function crackman {
-			echo -n "type fudge factor"
-			read FUDGE_FACTOR
-			echo You typed: $FUDGE_FACTOR
-			set -- ${FUDGE_FACTOR}
-			echo -e -n "`gettext \"type encryption size 64,128 etc...\"`"
-			read ENC_SIZE
-			echo You typed: $ENC_SIZE
-			set -- ${ENC_SIZE}
+			read -p "Insert Fudge Factor: " FUDGE_FACTOR 
+			read -p "`gettext 'Type encryption size (64,128...): '`" ENC_SIZE
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff " $AIRCRACK -a 1 -b $Host_MAC -f $FUDGE_FACTOR -n $ENC_SIZE -0 -s $DUMP_PATH/$Host_MAC-01.cap" & menufonction
 		}
@@ -160,7 +145,7 @@
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff  "$AIREPLAY --fakeauth 6000 -o 1 -q 10 -e $Host_SSID -a $Host_MAC -h $FAKE_MAC $WIFI" & menufonction
 	}
 	function fakeauth2 {
-					$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
+			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$AIREPLAY --fakeauth 0 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $WIFI" & menufonction
 	}
 	function fakeauth3 {
@@ -170,15 +155,14 @@
 	
 	# Subproducts of choosedeauth
 		function deauthall {
-						$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
+			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC $WIFI"
 		}
 		
 		function deauthclient {
 		if [ "$Client_MAC" = "" ]
 		then	
-			clear
-			echo "ERROR: You have to select a client first"
+			clear && echo "ERROR: You have to select a client first"
 		else
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff  "$AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC -c $Client_MAC $WIFI"
@@ -213,41 +197,31 @@
 			}
 	
 			function wesside {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
-				$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
+				rm -rf prga.log wep.cap key.log
+                $CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 				$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff  "$WESSIDE -i $WIFI" & choosewesside
 			}
 
 			function wessidetarget {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff  "$WESSIDE -v $Host_MAC -i $WIFI" & choosewesside
 			}
 
 			function wessidetargetmaxer {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$EXECFLAG $WESSIDE -v $Host_MAC -k 1 -i $WIFI" & choosewesside
 			}
 
 			function wessidetargetpoor {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
 			$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "$WESSIDE -v $Host_MAC -k 3 -i $WIFI" & choosewesside
 			}
 
 			function wessidenewtarget {
-				rm -rf prga.log
-				rm -rf wep.cap
-				rm -rf key.log
+				rm -rf prga.log wep.cap key.log
 				ap_array=`cat $DUMP_PATH/dump-01.csv | grep -a -n Station | awk -F : '{print $1}'`
 				head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv
 				clear
@@ -294,8 +268,7 @@
 	function fragnoclientend {
 		if [ "$Host_MAC" = "" ]
 		then
-			clear
-			echo `gettext 'ERROR: You must select a target first'`
+			clear && echo `gettext 'ERROR: You must select a target first'`
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $FAKE_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
@@ -305,10 +278,8 @@
 
 	function fragmentationattackend {
 
-		if [ "$Host_MAC" = "" ]
-		then
-			clear
-			echo `gettext 'ERROR: You must select a target first' `
+		if [ "$Host_MAC" = "" ]; then
+			clear && echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
 			$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen
@@ -317,10 +288,8 @@
 	}
 
 	function chopchopend {
-		if [ "$Host_MAC" = "" ]
-		then
-			clear
-			echo `gettext 'ERROR: You must select a target first' `
+		if [ "$Host_MAC" = "" ];then
+			clear && echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
 
@@ -332,10 +301,8 @@
 	}
 	
 	function chopchopclientend {
-		if [ "$Host_MAC" = "" ]
-		then
-			clear
-			echo `gettext 'ERROR: You must select a target first' `
+		if [ "$Host_MAC" = "" ]; then
+			clear && echo `gettext 'ERROR: You must select a target first' `
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
 		rm -rf $DUMP_PATH/chopchop_$Host_MAC*
@@ -358,7 +325,6 @@
 	}
 
 	function menufonction {
-			echo "Fake function to return to menu within screen, deleted everyting since this part should not be seen by user)"
-			clear	
+			echo "Fake function to return to menu within screen, deleted everyting since this part should not be seen by user)"; clear
 	}
 	
