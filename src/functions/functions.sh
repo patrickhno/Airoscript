@@ -1181,8 +1181,7 @@ function guess_idata(){
 	export TYPE=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $2 $3}'`
 	export DRIVER=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $4}'`
 	export tmpwifi=`echo \"$AIROUTPUT\" | awk {'print $NF'} | cut -d ")" -f1`
-    #if [ "$wifi" =~ (.*)[0-9] ];  then WIFI=$tmpwifi; fi # FIXME
-    WIFI=$tmpwifi # FIXME
+    if [[ "$tmpwifi" =~ (.*)[0-9] ]];  then WIFI=$tmpwifi; fi 
 }
 
 function setinterface {
