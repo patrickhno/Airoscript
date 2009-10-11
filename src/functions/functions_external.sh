@@ -17,9 +17,9 @@
 #        along with this program; if not, write to the Free Software
 #        Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-echo -e "\tExternal functions from airoscript loaded,\n\tif you don't want this, set EXTERNAL=0 in\n\tconfig file"
+echo "\tExternal functions from airoscript loaded,\n\tif you don't want this, set EXTERNAL=0 in\n\tconfig file"
 
-function doitwld {
+doitwld(){
 	$WLD $Host_MAC $Host_SSID $DUMP_PATH/wlddic 
 	$AIRCRACKOLD $FORCEWEPKOREK -b $Host_MAC -w $DUMP_PATH/wlddic $DUMP_PATH/$Host_MAC-01.cap
 }
@@ -30,16 +30,16 @@ doitjt(){
 }
 
 wld(){
-if [ !$Host_MAC ] then clear; echo -e "gettext `'Error: You must select a client before performing this attack'`\n"; fi
-if [ $Host_MAC =~ "WLAN(.*)" ]; then
-    if [ -e $DUMP_PATH/$Host_MAC-01.cap ]; then doitjtd
-    else echo "`gettext 'No capture file. Capture some ivs'`"; fi
-fi
+    if [ "$Host_MAC" == "" ]; then clear; echo -e "gettext `'Error: You must select a client before performing this attack'`\n"; fi
+    if [[ "$Host_MAC" =~ "WLAN(.*)" ]]; then
+        if [ -e $DUMP_PATH/$Host_MAC-01.cap ]; then doitjtd
+        else echo "`gettext 'No capture file. Capture some ivs'`"; fi
+    fi
 }
 jtd(){
-if [ !$Host_MAC ] then clear; echo -e "gettext `'Error: You must select a client before performing this attack'`\n"; fi
-if [ $Host_MAC =~ "JAZZTEL(.*)" ]; then
-    if [ -e $DUMP_PATH/$Host_MAC-01.cap ]; then doitjtd
-    else echo "`gettext 'No capture file. Capture some ivs'`"; fi
-fi
+    if [ "$Host_MAC" == "" ]; then clear; echo -e "gettext `'Error: You must select a client before performing this attack'`\n"; fi
+    if [[ "$Host_MAC" =~ "JAZZTEL(.*)" ]]; then
+        if [ -e $DUMP_PATH/$Host_MAC-01.cap ]; then doitjtd
+        else echo "`gettext 'No capture file. Capture some ivs'`"; fi
+    fi
 }
