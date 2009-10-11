@@ -242,7 +242,7 @@ done
 		done
 		}
 		function listsel3 {
-			HOST=`cat $DUMP_PATH/$Host_MAC-01.txt | grep -a $Host_MAC | awk '{ print $1 }'| grep -a -v 00:00:00:00| grep -a -v $Host_MAC`
+			HOST=`cat $DUMP_PATH/$Host_MAC-01.csv | grep -a $Host_MAC | awk '{ print $1 }'| grep -a -v 00:00:00:00| grep -a -v $Host_MAC|sed 's/,//'`
 			echo -e "`gettext '
 		    ||
 		    ||
@@ -355,9 +355,9 @@ done
 
 # This is for ATTACK (3) option
 function witchattack {
-	if [ "$Host_ENC" = " WEP " ] || [ "$Host_ENC" = "WEP" ]; then monmode && attackwep
-	elif [ "$Host_ENC" = " WPA " ] || [ "$Host_ENC" = "WPA" ]; then monmode && attackwpa
-	else attackopn; fi
+    if [[ "$Host_ENC" =~ (.*)"WEP"(.*) ]]; then monmode && attackwep
+    elif [[ "$Host_ENC" =~ (.*)"WPA"(.*) ]]; then monmode && attackwpa
+    else attackopn; fi
 }
 
 	# If wep
@@ -1177,7 +1177,7 @@ checkforcemac() {
 }
 
 function guess_idata(){
-	AIROUTPUT=$($AIRMON $1 $WIFICARD|grep -A 1 $WIFICARD);
+	AIROUTPUT=$($AIRMON $1 $WIFICARD|grep -v "running"|grep -A 1 $WIFICARD);
 	export TYPE=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $2 $3}'`
 	export DRIVER=`echo \"$AIROUTPUT\" | grep monitor      | awk '{print $4}'`
 	export tmpwifi=`echo \"$AIROUTPUT\" | awk {'print $NF'} | cut -d ")" -f1`
