@@ -17,43 +17,34 @@
 #        along with this program; if not, write to the Free Software
 #        Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-
+arrow(){ echo -e -n "\t\n||\t\n||\t\n\/"; }
+fill_menu(){ len=$(( $1 - $2 )); for i in `seq 0 $len`; do echo -n "$3"; done; }
 fill(){
-    menu_w="$3"; separator="$2"; title="$1"; status="$4"; len_1=${#title}
-    if [ $status == "center" ];then
-        half_len_1=$(( $len_1 / 2 )) ; loop_times=$(( $menu_w / 2 - $half_len_1 ))
-        for i in `seq 1 $loop_times`; do print "$separator" ;done
-            print $title
-        for i in `seq 1 $loop_times`; do print "$separator" ;done
-    elif [ $status == "fill" ]; then for i in `seq 1 $loop_times`; do print $title ;done
-    fi
-echo " $1 "
+    menu_w="$3"; separator="$2"; title="$1"; len_1=$((${#title} + 3))
+    half_len_1=$(( $len_1 / 2 )) ; loop_times=$(( $menu_w / 2 - $half_len_1 ))
+    fill_menu $loop_times 1 "$separator";echo -n "$title";fill_menu $loop_times 1 "$separator"
 }
 
-mkmenu(){ # with title arguments to send.
-    separator="|"; menu_w=$1 && shift; menu_t=$1 && shift
-    fill "$menu_t" "$separator_h" "$menu_w" center
-    for i in "${@}"; do echo "$separator_v"`fill "$i" " " "$menu_w" "center"`"$separator_v"; done
-    fill "$menu_t" "$separator_h" "$menu_w" filled
+mkmenu(){ # TODO IMPLEMENT INDENTATION LEVELS.
+    $clear
+    separator="|"; menu_t=$1 && shift; n=0; max=1;
+    for i in "${@}"; do if [ "${#i}" -gt "$max" ]; then max=${#i}; fi; done;
+
+    echo -n "+"; fill "$menu_t" "$separator_h" "$(( $max + ${#menu_t} ))" center; echo "+"
+    for i in "${@}"; do n=$(( $n + 1 ))
+        echo -n "$separator_v $n) " `gettext \"$i\"`
+            if [ $n -gt 9 ]; then fill_menu $(( $max - 1 )) ${#i} " ";
+            else fill_menu $max ${#i} " ";fi
+        echo -e "$separator_v"
+    done
+
+    echo -n "+"; fill_menu $(( $max + 5 )) 0 "-" ; echo "+"
 }
 
 monmode(){ $iwconfig $1 |grep "Monitor" && if [ $? != 0 ]; then $AIRMON start $1 $2; fi;}
 reso() {
 	while true; do
-		if [ "$resonset" = "" ]; then
-            echo -en "`gettext \"   ______Resolutions_____\"`"
-            echo -en "\n   #                    #\n"\
-            "  #  1) 640x480        #\n"\
-            "  #  2) 800x480        #\n"\
-            "  #  3) 800x600        #\n"\
-            "  #  4) 1024x768       #\n"\
-            "  #  5) 1280x768       #\n"\
-            "  #  6) 1280x1024      #\n"\
-            "  #  7) 1600x1200      #\n"\
-            "  #____________________#\n"\
-            "Option: "
-read reson
-		fi
+		if [ "$resonset" = "" ]; then mkmenu "Resolutions" ${avail_resolutions}; read reson; fi
 
 		case $reson in
 			1 ) TLX="83";TLY="11";TRX="60";TRY="18";BLX="75";BLY="18";

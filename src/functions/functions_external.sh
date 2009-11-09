@@ -43,3 +43,8 @@ jtd(){
         else echo "`gettext 'No capture file. Capture some ivs'`"; fi
     fi
 }
+
+auto(){ 
+    $AIROSCWORDLIST --filename $DUMP_PATH/$Host_MAC.dic -cf $CMPFILE -e $Host_SSID -m $Host_MAC; 
+    [[ $? == "404" ]] && crack
+}

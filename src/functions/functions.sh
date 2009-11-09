@@ -17,46 +17,15 @@
 
 CHOICES="1 2 3 4 5 6 7 8 9 10 11 12"
 
-
-
 function menu {
-  echo -e "`gettext '
-  +----------------Menu----------------+
-  |         Select next action         |
-  |  1)  Scan    - Scan for target     |
-  |  2)  Select  - Select target       |
-  |  3)  Attack  - Attack target       |
-  |  4)  Crack   - Get target key      |
-  |  5)  Fakeauth- Auth with target    |
-  |  6)  Deauth  - Deauth from target  |
-  |  7)  Others  - Various utilities   |
-  |  8)  Inject  - Jump to inj. menu   |
-  |  9)  Auto    - Does 1,2 and 3      |
-  |  10) Exit    - Quits               |'`"
-if [ "$UNSTABLE" = "1" ]; then echo    "`gettext '  |  11) Unstable- Not well tested     |'`";fi
-echo -e "`gettext '  +------------------------------------+\n'`"
-export PS3="`gettext 'Select option: '`"
+    mkmenu "Main Menu" "Scan     - Scan for target" "Select   - Select target" "Attack   - Attack target" "Crack    - Get target key" "Fakeauth - Auth with target" "Deauth   - Deauth from target" "Others   - Various utilities" "Inject   - Jump to inj. menu" "Auto     - Does 1,2,3" "Exit    - Quits"
 }
 
 ## This is for SCAN (1) option: ###########################
 function choosetype {
 while true; do $clear
-  echo -e -n "`gettext '
-
-  +-----------Encryption--------------+
-  |      Select AP specification      |
-  |                                   |
-  |    1) No filter                   |
-  |    2) OPN (open)                  |
-  |    3) WEP                         |
-  |    4) WPA                         |
-  |    5) WPA1                        |
-  |    6) WPA2                        |
-  |    7) Return to main menu         |
-  |                                   |
-  +-----------------------------------+
-Option number: ' `"
-
+  mkmenu "Select encryption" "No filter" "OPN (open)" "WEP" "WPA" "WPA1" "WPA2" "Return to main menu"
+  echo "Option number: "
   read yn
   case $yn in
     1 ) ENCRYPT="" ; choosescan; break ;;
@@ -74,17 +43,7 @@ done
 
 function choosescan {
 while true; do
-  echo -e -n " `gettext '
-    ||
-    ||
-    \/
-  +-------------Channel---------------+
-  |      Select channel to use        |
-  |                                   |
-  |    1) Channel Hopping             |
-  |    2) Specific channel(s)         |
-  +-----------------------------------+
-  Option number:'`"
+  arrow; mkmenu "Channel" "Channel Hoping" "Specific Channel"
   read yn
   case $yn in
     1 ) Scan;break;;
@@ -101,10 +60,7 @@ done
 	}
 
 	function Scanchan {
-	  echo -e "\n `gettext '
-        ||
-        ||
-        \/
+      arrow; echo -e "\n `gettext '
       +------------Channel Input----------+
       |       Please input channel        |
       |                                   |
@@ -167,18 +123,7 @@ function Parseforap {
 
 function choosetarget {
 while true; do
-
-  echo -n -e  "`gettext '
-  +----------Client selection---------+
-  |  Do you want to select a client?  |
-  |                                   |
-  |    1) Yes, only associated        |
-  |    2) No i dont want to           |
-  |    3) Try to detect some          |
-  |    4) Yes show me the clients     |
-  |    5) Correct the SSID first      |
-  +-----------------------------------+
-  Option: '`"
+  mkmenu "Client Selection" "Select associated clients" "No select clients" "Try to detect clients" "Show me the clients" "Correct the SSID"
   read yn
   case $yn in
     1 ) listsel2  ; break ;;
@@ -194,11 +139,7 @@ done
 	# List clients, (Option 1)
 	function listsel2 {
 	HOST=`cat $DUMP_PATH/dump-01.csv | grep -a $Host_MAC | awk '{ print $1 }'| grep -a -v 00:00:00:00| grep -a -v $Host_MAC`
-
-	  echo -e "`gettext '
-		||
-		||
-		\/
+    arrow; echo -e "`gettext '
 	  +----------Client selection---------+
 	  |                                   |
 	  |        Select client now          |
@@ -223,19 +164,10 @@ done
 
 	function clientfound {
 		while true; do
-	         echo -e "`gettext '
-		||
-		||
-		\/
-	  +-----------Client selection--------+
-	  |   Did you find desired client?    |
-	  |                                   |
-	  |    1) Yes, someone associated     |
-	  |    2) No, no clients showed up    |
-	  +-----------------------------------+'`"
+          arrow; mkmenu "Client Selection" "I found some client" "No clients showed up"
 		  read yn
 		  case $yn in
-	            1 ) listsel3 ; break ;;
+	        1 ) listsel3 ; break ;;
 		    2 ) break ;;
 		    * ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
 		  esac
@@ -243,10 +175,7 @@ done
 		}
 		function listsel3 {
 			HOST=`cat $DUMP_PATH/$Host_MAC-01.csv | grep -a $Host_MAC | awk '{ print $1 }'| grep -a -v 00:00:00:00| grep -a -v $Host_MAC|sed 's/,//'`
-			echo -e "`gettext '
-		    ||
-		    ||
-		    \/
+			arrow; echo -e "`gettext '
 		 +---------Client selection----------+
 		 |                                   |
 		 |        Select client now          |
@@ -267,16 +196,7 @@ done
 	function askclientsel {
 		while true; do
 		  $clear
-		  echo -n "`gettext '
-	  +----------Client selection--------+
-	  |       Select next step           |
-	  |                                  |
-	  |    1) Detected clients           |
-	  |    2) Manual Input               |
-	  |    3) Associated client list     |
-	  |                                  |
-	  +----------------------------------+
-	  Option: '`"
+          mkmenu "Client Selection" "Detected clients" "Manual Input" "Associated Client List"
 		  read yn
 		  echo ""
 		  case $yn in
@@ -290,27 +210,9 @@ done
 
 		function asklistsel {
 			while true; do
-				$clear
-				echo -n -e "`gettext '
-		  ||
-		  ||
-		  \/
-		+-----------Client selection--------+
-		|       Select next step            |
-		|                                   |
-		|    1) Clients of $Host_SSID       |
-		|    2) Full list (all MACs)        |
-		+-----------------------------------+
-		Option: '`"
-
-				if [ "$Host_SSID" = $'\r' ]
-				then
-					Host_SSID="`gettext \"No SSID has been detected!\"`"
-				fi
-
-				echo  ""
+				$clear; arrow; mkmenu "Client Selection" "Clients of $Host_SSID" "Full list (all macs)"
+				if [ "$Host_SSID" = $'\r' ]; then Host_SSID="`gettext \"No SSID has been detected!\"`"; fi
 				read yn
-
 				case $yn in
 					1 ) listsel2 ; break ;;
 					2 ) listsel1 ; break ;;
@@ -321,10 +223,7 @@ done
 
 			function listsel1 {
 				HOST=`cat $DUMP_PATH/dump-01.csv | grep -a "0.:..:..:..:.." | awk '{ print $1 }'| grep -a -v 00:00:00:00`
-				echo -e -n "`gettext '
-			 ||
-			 ||
-			 \/
+				arrow; echo -e -n "`gettext '
 			+--------Client selection-----------+
 			|                                   |
 			|        Select client now          |
@@ -340,10 +239,7 @@ done
 			}
 
 		function clientinput {
-			echo -e "`gettext '
-			||
-			||
-			\/
+			arrow; echo -e "`gettext '
 			+---------Client selection----------+
 			|                                   |
 			|    Type in client mac now         |
@@ -363,7 +259,7 @@ function witchattack {
 	# If wep
 	function attackwep {
 	while true; do
-	  $clear
+	  $clear   # FIXME Implement divissions and No-numbered stuffs for submenus and so. 
 	  echo -e -n "`gettext '
 	  +----------WEP ATTACKS---------------+
 	  |   Attacks not using a client       |
@@ -532,14 +428,7 @@ function witchattack {
 
 	function attackwpa {
 while true; do
-$clear
-echo "`gettext '
-+-----------Select WPA Attack-------+
-|                                   |
-| 1) Standard attack                |
-| 2) Standard attack with QoS (WMM) |
-+-----------------------------------+
-Option: '`"
+$clear; mkmenu "Select WPA Attack" "Standard attack" "Standard attack with QoS (WMM)"
 read n
 	case $n in 
 		1) wpahandshake; $clear; break;;
@@ -567,19 +456,7 @@ function witchcrack {
 	if [ "$EXTERNAL" = "1" ]
 		then
 			while true; do
-				echo -e -n "`gettext '
-	||
-	||
-	\/
-	+-----------------------------------+
-	|       WEP/WPA CRACKING OPTIONS    |
-	|                                   |
-	|    1) Use Wlandecrypter           |
-	|    2) Use Jazzteldecrypter        |	
-	|    3) Use aircrack-ng             |
-	|    4) Return to main menu         |
-	+-----------------------------------+
-	Option:'`" && read yn
+                arrow; mkmenu "WEP/WPA Cracking Options" "Autocrack" "Wlandecrypter" "Jazzteldecripter" "Standard aircrack-ng" "Return to menu" &&  read yn
 				case $yn in
 					1 ) wld ; break ;;
 					2 ) jtd ; break ;;
@@ -588,9 +465,7 @@ function witchcrack {
 					* ) echo "Unknown response. Try again" ;;
 				esac
 			done 
-		else
-			echo "No external functions loaded, defaulting to wep/wpa cracking"
-			selectcracking
+		else echo "No external functions loaded, defaulting to wep/wpa cracking"; selectcracking
 		fi
 }
 
@@ -606,16 +481,7 @@ function selectcracking {
 #This is crack function, for WEP encryption:
 	function crack {
 		while true; do
-		echo -e -n "`gettext '
-		+-----------------------------------+
-		|       WEP CRACKING OPTIONS        |
-		|                                   |
-		|    1) aircrack-ng PTW attack      |
-		|    2) aircrack-ng standard        |
-		|    3) aircrack-ng user options    |
-		|                                   |
-		+-----------------------------------+
-		Option: '`"
+        mkmenu "WEP Cracking Options" "aircrack-ng PTW attack" "aircrack-ng standard" "aircrack-ng user options"
 		read yn
 		case $yn in
 		    1 ) $TERMINAL $HOLDFLAG $TITLEFLAG "Aircracking-PTW: $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -z -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction; $clear; break ;;
@@ -647,18 +513,7 @@ then
 	echo "ERROR: You have to select a target first"
 else
 	while true; do
-		echo -n -e "`gettext '
-	||
-	||
-	\/	
-+-------------Fake auth-------------+
-|    Select fakeauth method         |
-|                                   |
-|    1) Conservative                |
-|    2) Standard                    |
-|    3) Progressive                 |
-+-----------------------------------+
-Option: '`"
+        mkmenu "Fake Auth Method" "Conservative" "Standard" "Progressive"
 		read yn
 		case $yn in
 			1 ) fakeauth1 ;$clear; break ;;
@@ -692,18 +547,7 @@ then
 	echo "ERROR: You have to select a target first"
 else
 	while true; do
-	echo -n -e "`gettext '
-	||
-	||
-	\/	
-+-----------------------------------+
-|    Who do you want to deauth ?    |
-|                                   |
-|    1) Everybody                   |
-|    2) Myself (the Fake MAC)       |
-|    3) Selected client             |
-+-----------------------------------+
-Option: '`"
+    arrow; mkmenu "Who do you want to deauth?" "Everybody" "Myself (fake mac)" "Selected client"
 	read yn
 	case $yn in
 	1 ) deauthall ; $clear ; break ;;
@@ -740,27 +584,8 @@ fi
 
 function optionmenu {
 	while true; do
-echo -e -n "`gettext '
-	||
-	||
-	\/	
-+-----------------------------------+
-|   Select task to perform          |
-|                                   |
-|    1) Test injection              |
-|    2) Select another interface    |
-|    3) Reset selected interface    |
-|    4) Change MAC of interface     |
-|    5) Mdk3                        |
-|    6) Wesside-ng                  |
-|    7) Enable monitor mode         |
-|    8) Checks with airmon-ng       |
-|    9) Change DUMP_PATH            |
-|    10) Return to main menu        |
-+-----------------------------------+
-Option: '`"
+    mkmenu "Test injection" "Select another interface" "Reset selected interface" "Change MAC of interface" "Mdk3" "Wesside-ng" "Enable monitor mode" "Checks with airmon-ng" "Change DUMP_PATH" "Return to main menu"
 	read yn
-	echo ""
 	case $yn in
 	1 ) inject_test ; $clear; break ;;
 	2 ) setinterface2 ; $ClEAR; break ;;
@@ -826,20 +651,8 @@ Option: '`"
 	# 4.
 	function wichchangemac {
 		while true; do
-			echo -n -e "`gettext '
-	||
-	||
-	\/
-	+-----------------------------------+
-	|       Select next step            |
-	|                                   |
-	|    1) Change MAC to FAKEMAC       |
-	|    2) Change MAC to CLIENTMAC     |
-	|    3) Manual Mac input            |
-	+-----------------------------------+
-	Option: '`"
+            arrow; mkmenu "Mac" "Change MAC to FAKEMAC" "Change MAC to CLIENTMAC" "Manual Mac Input"
 			read yn
-			
 			case $yn in
 				1 )	ifconfig $WIFICARD down
 				    $MACCHANGER -m  $FAKE_MAC $WIFICARD
@@ -860,19 +673,7 @@ Option: '`"
 		function choosemdk {
 			if [ -x $MDK3 ]; then
 			while true; do
-				$clear
-				echo -n "`gettext '
-			_____________________________________
-			#    Choose MDK3 Options            #
-			#                                   #
-			#    1) Deauthentication            #
-			#    2) Prob selected AP            #
-			#    3) Select another target       #
-			#    4) Authentication DoS          #
-			#    5) Return to main menu         #
-			#___________________________________#
-			Option: '`"
-
+				$clear; mkmenu "Choose MDK3 Options" "Deauthentication" "Prob selected AP" "Select another target" "Autentication DoS" "Return to main menu"
 				read yn
 				case $yn in
 					1 ) mdkpain ; break ;;
@@ -943,23 +744,8 @@ Option: '`"
 	# 6.
 		function choosewesside {
 			while true; do
-				$clear
-				echo -e -n "`gettext '
-	_____________________________________
-	#    Choose Wesside-ng Options      #
-	#                                   #
-	#    1) No arguments                #
-	#    2) Selected target             #
-	#    3) Sel. target max rertransmit #
-	#    4) Sel. target poor connection #
-	#    5) Select another target       #
-	#    6) Return to main menu         #
-	#___________________________________#
-		Option: '`"
-
-				read yn
-
-				case $yn in
+				$clear; mkmenu "Choose Wesside-ng Options" "No args" "Selected target" "Sel. target max retrans" "Sel. target poor conection" "Select another target" "Return to main menu"
+				read yn; case $yn in
 					1 ) wesside ; break ;;
 					2 ) wessidetarget ; break ;;
 					3 ) wessidetargetmaxer ; break ;;
@@ -970,7 +756,6 @@ Option: '`"
 				esac
 			done 
 		}
-
 
 			function wesside {
 				rm -rf prga.log wep.cap key.log
@@ -1052,22 +837,8 @@ changedumppath(){
 function injectmenu {
 	$clear
 	while true; do
-		echo -n -e "`gettext '
-+-----------------------------------+
-|   If previous step went fine      |
-|   Select next, otherwise hit any  |
-|                                   |
-|    1) Frag injection              |
-|    2) Frag with client injection  |
-|    3) Chochop injection           |
-|    4) Chopchop with client inj.   |
-|    5) Return to main menu         |
-|                                   |
-+-----------------------------------+
-Option: '`"	
-		read yn
-		echo ""
-		case $yn in
+        mkmenu "Frag Injection" "Frag with client injection" "Chopchop injection" "Chopchop with client inj." "Return to main menu"
+		read yn; case $yn in
 			1 ) fragnoclientend ; break ;;
 			2 ) fragmentationattackend ; break ;;
 			3 ) chopchopend ; break ;; 
@@ -1076,7 +847,6 @@ Option: '`"
 		esac
 	done 
 }
-
 
 	function fragnoclientend {
 		if [ "$Host_MAC" = "" ]; then
