@@ -17,6 +17,20 @@
 #        along with this program; if not, write to the Free Software
 #        Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
+execute(){ 
+    title=$1; shift;
+
+    if [ $TERMINAL == "screen" ]; then
+		$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen -t $title 
+		$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "${@}"
+    else
+        $CDCMD $TERMINAL $HOLD $TITLEFLAG "$title" $TOPLEFTBIG $BGC $BACKGROUND_COLOR $FGC $DUMPING_COLOR $EXECFLAG "${@}";
+    fi
+}
+
+get_childs(){ ps axo ppid,pid|awk "/$pid/ {print $2}"|grep -v "$pid"; }
+clean_processes(){ killall airmon-ng airodump-ng airodump airmon aireplay-ng aireplay tkiptun-ng tkiptun;$clear; }
+
 arrow(){ echo -e -n "\t\n||\t\n||\t\n\/"; }
 fill_menu(){ len=$(( $1 - $2 )); for i in `seq 0 $len`; do echo -n "$3"; done; }
 fill(){
@@ -32,7 +46,7 @@ mkmenu(){ # TODO IMPLEMENT INDENTATION LEVELS.
 
     echo -n "+"; fill "$menu_t" "$separator_h" "$(( $max + ${#menu_t} ))" center; echo "+"
     for i in "${@}"; do n=$(( $n + 1 ))
-        echo -n "$separator_v $n) " `gettext \"$i\"`
+        echo -n "$separator_v $n) " `gettext "$i"`
             if [ $n -gt 9 ]; then fill_menu $(( $max - 1 )) ${#i} " ";
             else fill_menu $max ${#i} " ";fi
         echo -e "$separator_v"
@@ -44,7 +58,7 @@ mkmenu(){ # TODO IMPLEMENT INDENTATION LEVELS.
 monmode(){ $iwconfig $1 |grep "Monitor" && if [ $? != 0 ]; then $AIRMON start $1 $2; fi;}
 reso() {
 	while true; do
-		if [ "$resonset" = "" ]; then mkmenu "Resolutions" ${avail_resolutions}; read reson; fi
+		if [ "$resonset" = "" ]; then mkmenu "Resolutions" 640x480 800x480 800x600 1024x768 1280x768 1280x1024 1600x1200; read reson; fi
 
 		case $reson in
 			1 ) TLX="83";TLY="11";TRX="60";TRY="18";BLX="75";BLY="18";
@@ -103,7 +117,6 @@ function setterminal {
 			BGC=""
             ;;
 
-		screen | "screen" | "screen " ) . $SCREEN_FUNCTIONS && echo "Screen functons loaded, replacing functions";;
 		airosperl ) airosperl & exit ;;
 	esac
     [[ "$DEBUG" = "1" ]] && echo $TOPLEFT \
@@ -122,13 +135,9 @@ function setterminal {
 
 # this function allows debugging, called from main menu.
 function debug {
-	if [ "$DEBUG" = "1" ]
-	then
-		export HOLD=$HOLDFLAG
-		echo "`gettext \" 	Debug Mode enabled, you\'ll have to manually close windows\"`"
-	else
-		export HOLD=""
-	fi
+	if [ "$DEBUG" = "1" ]; then
+		export HOLD=$HOLDFLAG; echo "`gettext \" \tDebug Mode enabled, you\'ll have to manually close windows\"`"
+	else export HOLD="" ;fi
 }
 
 function getterminal {
@@ -172,15 +181,14 @@ select_ap(){
 
 doexit(){
 		echo -n `gettext "	Do you want me to stop monitor mode on $WIFI? (y/N) "`
-		read dis
-		if [ "$dis" = "y" ]; then
+		read dis; if [ "$dis" = "y" ]; then
 			echo -n `gettext 'Deconfiguring interface...'` 
 			airmon-ng stop $WIFI > /dev/null
 			echo "`gettext 'done'`"
 		fi
-		echo -n `gettext 'Do you want me to delete temporary data dir? (y/N) '`; read del
 
-		if [ "$del" = "y" ]; then
+		echo -n `gettext 'Do you want me to delete temporary data dir? (y/N) '`;
+		read del; if [ "$del" = "y" ]; then
 			echo -n `gettext 'Deleting'` " $DUMP_PATH ... "
 			rm -r $DUMP_PATH 2>/dev/null *.cap 2>/dev/null
 			echo `gettext 'done'`
