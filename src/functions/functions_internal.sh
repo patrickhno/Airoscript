@@ -21,15 +21,25 @@ execute(){
     title=$1; shift;
 
     if [ $TERMINAL == "screen" ]; then
-		$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen -t $title 
+		$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen -t $title
 		$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "${@}"
     else
-        $CDCMD $TERMINAL $HOLD $TITLEFLAG "$title" $TOPLEFTBIG $BGC $BACKGROUND_COLOR $FGC $DUMPING_COLOR $EXECFLAG "${@}";
-    fi
+        if [ $QUIET ] && [ $SCAN != 1 ]; then 
+            ${@} &> /dev/null &
+        else
+            $CDCMD $TERMINAL $HOLD $TITLEFLAG "$title" $TOPLEFTBIG $BGC $BACKGROUND_COLOR $FGC $DUMPING_COLOR $EXECFLAG "${@}";
+        fi
+    fi 
+    save_pids $!
 }
 
-get_childs(){ ps axo ppid,pid|awk "/$pid/ {print $2}"|grep -v "$pid"; }
-clean_processes(){ killall airmon-ng airodump-ng airodump airmon aireplay-ng aireplay tkiptun-ng tkiptun;$clear; }
+save_pids(){
+    mkdir /var/run/airoscript 2>/dev/null
+    for i in `get_childs $1`; do touch "/var/run/airoscript/$i"; done
+}
+
+get_childs(){echo $( ps axo ppid,pid|awk "/$1/ {print \$2}"|grep -v "$pid") } 
+clean_processes(){ for i in `ls /var/run/airoscript/`; do kill $i; done; }
 
 arrow(){ echo -e -n "\t\n||\t\n||\t\n\/"; }
 fill_menu(){ len=$(( $1 - $2 )); for i in `seq 0 $len`; do echo -n "$3"; done; }
