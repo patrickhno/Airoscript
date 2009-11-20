@@ -23,6 +23,8 @@ function menu {
 
 ## This is for SCAN (1) option: ###########################
 function choosetype {
+if [ "$AUTO" == 1 ]; then ENCRYPT=""; return; fi
+
 while true; do $clear
   mkmenu "Select encryption" "No filter" "OPN (open)" "WEP" "WPA" "WPA1" "WPA2" "Return to main menu"
   echo "Option number: "
@@ -42,6 +44,8 @@ done
 }
 
 function choosescan {
+if [ "$AUTO" == 1 ]; then Scan; return; fi
+
 while true; do
   arrow; mkmenu "Channel" "Channel Hoping" "Specific Channel"
   read yn
@@ -54,11 +58,14 @@ done
 }
 	#Subproducts of choosescan.
 	function Scan {
+        export SCAN=1
 		$clear; rm -rf $DUMP_PATH/dump*
         execute "Scanning for targets" $AIRODUMP -w $DUMP_PATH/dump --encrypt $ENCRYPT -a $WIFI
+        export SCAN=0
 	}
 
 	function Scanchan {
+      export SCAN=1
       arrow; echo -e "\n `gettext '
       +------------Channel Input----------+
       |       Please input channel        |
@@ -72,6 +79,7 @@ done
 		read channel_number; set -- ${channel_number}
 	    $clear; rm -rf $DUMP_PATH/dump*; monmode $WIFI $channel_number
 		execute "Scanning for targets on channel $channel_number" $AIRODUMP -w $DUMP_PATH/dump --channel $channel_number --encrypt $ENCRYPT -a $WIFI
+        export SCAN=0
 	}
 
 # This is for SELECT (2) option
@@ -116,6 +124,7 @@ function Parseforap {
 }
 
 function choosetarget {
+if [ "$AUTO" == 1 ]; then return; fi
 while true; do
   mkmenu "Client Selection" "Select associated clients" "No select clients" "Try to detect clients" "Show me the clients" "Correct the SSID"
   read yn
@@ -132,24 +141,21 @@ done
  # Those are subproducts of choosetarget.
 	# List clients, (Option 1)
 	function listsel2 {
-	HOST=`cat $DUMP_PATH/dump-01.csv | grep -a $Host_MAC | awk '{ print $1 }'| grep -a -v 00:00:00:00| grep -a -v $Host_MAC`
-    arrow; echo -e "`gettext '
-	  +----------Client selection---------+
-	  |                                   |
-	  |        Select client now          |
-	  |   These clients are connected to  |
-	  |           $Host_SSID              |
-	  +-----------------------------------+'`"
-		select CLIENT in $HOST;	do export Client_MAC=` echo $CLIENT | awk '{ split($1, info, "," ) print info[1]  }' `;break;done
+        if [ "$AUTO" == "1" ]; then return; fi
+	    HOST=`cat $DUMP_PATH/dump-01.csv | grep -a $Host_MAC | awk '{ print $1 }'| grep -a -v 00:00:00:00| grep -a -v $Host_MAC`
+        arrow; mkbox "Client Selection" "Select client now" "These clients are connected to" $Host_SSID
+        select CLIENT in $HOST;	do export Client_MAC=` echo $CLIENT | awk '{ split($1, info, "," ) print info[1]  }' `;break;done
 	}
 
 	# This way we detect clients. (Option 3)
 	function clientdetect {
+        if [ "$AUTO" == "1" ]; then return; fi
 		$iwconfig $WIFICARD channel $Host_CHAN
 		capture & deauthall & menufonction # Those functions are used from many others, so I dont let them here, they'll be independent.
 	}
 
 	function clientfound {
+        if [ "$AUTO" == "1" ]; then return; fi
 		while true; do
           arrow; mkmenu "Client Selection" "I found some client" "No clients showed up"
 		  read yn
@@ -161,15 +167,9 @@ done
 		done
 		}
 		function listsel3 {
+            if [ "$AUTO" == "1" ]; then return; fi
 			HOST=`cat $DUMP_PATH/$Host_MAC-01.csv | grep -a $Host_MAC | awk '{ print $1 }'| grep -a -v 00:00:00:00| grep -a -v $Host_MAC|sed 's/,//'`
-			arrow; echo -e "`gettext '
-		 +---------Client selection----------+
-		 |                                   |
-		 |        Select client now          |
-		 |   These clients are connected to  |
-		 |           $Host_SSID              |
-		 |                                   |
-		 +-----------------------------------+'`"
+                arrow; mkbox "Client Selection" "Select client now" "These clients are connected to" $Host_SSID
 				select CLIENT in $HOST; do
 					export Client_MAC=` echo $CLIENT | awk '{
 						split($1, info, "," )
@@ -180,6 +180,7 @@ done
 
 	# Show clientes (Option 4)
 	function askclientsel {
+        if [ "$AUTO" == "1" ]; then return; fi
 		while true; do
 		  $clear; mkmenu "Client Selection" "Detected clients" "Manual Input" "Associated Client List"
 		  read yn
@@ -194,6 +195,7 @@ done
 	}
 
 		function asklistsel {
+            if [ "$AUTO" == "1" ]; then return; fi
 			while true; do
 				$clear; arrow; mkmenu "Client Selection" "Clients of $Host_SSID" "Full list (all macs)"
 				if [ "$Host_SSID" = $'\r' ]; then Host_SSID="`gettext \"No SSID has been detected!\"`"; fi
@@ -207,13 +209,9 @@ done
 		}
 
 			function listsel1 {
+                if [ "$AUTO" == "1" ]; then return; fi
 				HOST=`cat $DUMP_PATH/dump-01.csv | grep -a "0.:..:..:..:.." | awk '{ print $1 }'| grep -a -v 00:00:00:00`
-				arrow; echo -e -n "`gettext '
-			+--------Client selection-----------+
-			|                                   |
-			|        Select client now          |
-			+-----------------------------------+
-			Option: '`"
+				arrow; mkbox "Client selection" "Select client now"
 				select CLIENT in $HOST;
 				do
 					export Client_MAC=` echo $CLIENT | awk '{
@@ -224,14 +222,9 @@ done
 			}
 
 		function clientinput {
-			arrow; echo -e "`gettext '
-			+---------Client selection----------+
-			|                                   |
-			|    Type in client mac now         |
-			+-----------------------------------+
-			MAC: '`"
-			read Client_MAC
-			set -- ${Client_MAC}
+            if [ "$AUTO" == "1" ]; then return; fi
+			arrow; mkbox "Client selection" "Type in client mac now"
+			read Client_MAC; set -- ${Client_MAC}
 		}
 
 # This is for ATTACK (3) option
@@ -296,8 +289,7 @@ function witchattack {
 
 		#Option 1 (fake auth auto)
 		function fakeautoattack {
-			if [ "$INTERACTIVE" ] # More interactive airoscript.
-			then
+			if [ "$INTERACTIVE" == 1]; then
 				
 				read -p "`gettext \"Enter destination mac: (FF:FF:FF:FF:FF:FF)\"`" INJMAC
 					if [ "$INJMAC" = "" ]; then INJMAC="FF:FF:FF:FF:FF:FF"; fi
@@ -313,8 +305,7 @@ function witchattack {
 		}
 		#Option 2 (fake auth interactive)
 		function fakeinteractiveattack {
-			if [ "$INTERACTIVE" ] # More interactive airoscript.
-			then
+			if [ "$INTERACTIVE" == "1" ]; then
 				read -p "`gettext \"Enter destination mac: (FF:FF:FF:FF:FF:FF)\"`" INJMAC
 					if [ "$INJMAC" = "" ]; then INJMAC="FF:FF:FF:FF:FF:FF"; fi
 				read -p "`gettext \"Set framecontrol word (hex): (0841) \"`" FT
@@ -350,7 +341,7 @@ function witchattack {
 
 		#Option 7 (Auto arp replay)
 		function attackclient {
-			if [ "$INTERACTIVE" ]; then
+			if [ "$INTERACTIVE" == "1" ]; then
 				read -p "`gettext \"Enter destination mac: (FF:FF:FF:FF:FF:FF)\"`" INJMAC
 					if [ "$INJMAC" = "" ]; then INJMAC="FF:FF:FF:FF:FF:FF"; fi
 				read -p "`gettext 'Enable From or To destination bit (f/t):  '`" FT
@@ -361,7 +352,7 @@ function witchattack {
 
 		#Option 8 (interactive arp replay)
 		function interactiveattack {
-			if [ "$INTERACTIVE" ]; then
+			if [ "$INTERACTIVE" == 1 ]; then
 				read -p "`gettext 'Enter destination mac: (FF:FF:FF:FF:FF:FF)'`" INJMAC
 					if [ "$INJMAC" = "" ]; then INJMAC="FF:FF:FF:FF:FF:FF"; fi
 				read -p "`gettext 'Set framecontrol word (hex): (0841) '`" FT
@@ -498,16 +489,20 @@ then
 	$clear
 	echo "ERROR: You have to select a target first"
 else
-	while true; do
-        mkmenu "Fake Auth Method" "Conservative" "Standard" "Progressive"
-		read yn
-		case $yn in
-			1 ) fakeauth1 ;$clear; break ;;
-			2 ) fakeauth2 ;$clear; break ;;
-			3 ) fakeauth3 ;$clear; break ;;
-			* ) echo "Unknown response. Try again" ;;
-		esac
-	done
+    if [ "$INTERACTIVE" == "1" ]; then
+    	while true; do
+            mkmenu "Fake Auth Method" "Conservative" "Standard" "Progressive"
+    		read yn
+	    	case $yn in
+		    	1 ) fakeauth1 ;$clear; break ;;
+		    	2 ) fakeauth2 ;$clear; break ;;
+		    	3 ) fakeauth3 ;$clear; break ;;
+		    	* ) echo "Unknown response. Try again" ;;
+	        esac
+    	done
+    else
+        fakeauth1||fakeauth2||fakeauth3; $clear;
+    fi
 fi
 }
 
@@ -570,22 +565,21 @@ fi
 
 function optionmenu {
 	while true; do
-    mkmenu "Test injection" "Select another interface" "Reset selected interface" "Change MAC of interface" "Mdk3" "Wesside-ng" "Enable monitor mode" "Checks with airmon-ng" "Change DUMP_PATH" "Return to main menu"
-	read yn
-	case $yn in
-	1 ) inject_test ; $clear; break ;;
-	2 ) setinterface2 ; $ClEAR; break ;;
-	3 ) cleanup ;$clear; break ;;
-	4 ) wichchangemac ; $clear; break ;;
-	5 ) choosemdk ;$clear; break;;
-	6 ) choosewesside ;$clear; break ;;
-	7 ) monmode;$clear ; break ;;
-	8 ) airmoncheck ;$clear; break ;;
-	9 ) changedumppath;$clear; break;;
-	10 ) $clear;break ;;
-	* ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
-	
-	esac
+    mkmenu "Test injection" "Select another interface" "Reset selected interface" "Change MAC of interface" "Mdk3" "Wesside-ng" "Enable monitor mode" "Checks with airmon-ng" "Change DUMP_PATH" "Merge all ivs from all sessions" "Return to main menu"
+    	read yn; case $yn in
+        	1 ) inject_test ; $clear; break ;;
+        	2 ) setinterface2 ; $ClEAR; break ;;
+        	3 ) cleanup ;$clear; break ;;
+        	4 ) wichchangemac ; $clear; break ;;
+        	5 ) choosemdk ;$clear; break;;
+        	6 ) choosewesside ;$clear; break ;;
+         	7 ) monmode;$clear ; break ;;
+        	8 ) airmoncheck ;$clear; break ;;
+        	9 ) changedumppath;$clear; break;;
+            10) mergeallivs;$clear; break;;
+        	11 ) $clear;break ;;
+        	* ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
+	    esac
 	done
 }
 
@@ -598,9 +592,7 @@ function optionmenu {
 	function setinterface2 {
 
 		echo "`gettext 'Select your interface:'`"
-		select WIFI in $INTERFACES; do
-			break;
-		done
+		select WIFI in $INTERFACES; do break; done
 
 		export WIFICARD=$WIFI
 		echo -n `gettext 'Should I put it in monitor mode?'` " (Y/n) "
@@ -613,27 +605,21 @@ function optionmenu {
 				TYPE=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $2 $3}'`
 				DRIVER=`$AIRMON stop $WIFICARD | grep monitor | awk '{print $4}'`
 			fi
-
-		$clear
-		$IWIFI=$WIFI
+		$clear; $IWIFI=$WIFI
 		echo  `gettext 'Interface used is :'` $WIFICARD
 		echo  `gettext 'Interface type is :'` "$TYPE ($DRIVER)"
 		testmac
 	}
+
 	# 3.
 	function cleanup {
-		killall -9 aireplay-ng airodump-ng > /dev/null &
-		$AIRMON stop $WIFICARD
-		ifconfig $WIFICARD down
-		$clear
-		sleep 2
-		$CARDCTL eject
-		sleep 2
-		$CARDCTL insert
-		ifconfig $WIFICARD up
-		$AIRMON start $WIFICARD $Host_CHAN
+		killall -9 aireplay-ng airodump-ng &> /dev/null &
+		$AIRMON stop $WIFICARD; ifconfig $WIFICARD down
+		$clear; sleep 2; $CARDCTL eject; sleep 2; $CARDCTL insert
+		ifconfig $WIFICARD up; $AIRMON start $WIFICARD $Host_CHAN
 		$iwconfig $WIFICARD
 	}
+
 	# 4.
 	function wichchangemac {
 		while true; do
@@ -657,7 +643,7 @@ function optionmenu {
 
 	# 5.
 		function choosemdk {
-			if [ -x $MDK3 ]; then
+			if [ -x "$MDK3" ]; then
 			while true; do
 				$clear; mkmenu "Choose MDK3 Options" "Deauthentication" "Prob selected AP" "Select another target" "Autentication DoS" "Return to main menu"
 				read yn
@@ -810,6 +796,12 @@ function optionmenu {
 		else $AIRMON check $WIFICARD; fi
 	}
 
+mergeallivs(){ # TODO Untested
+    newdir=`mktemp -d`
+    for i in $TMPDIR/*/*.cap; do b=$(( $b + 1 )); $IVSTOOLS --convert $i $newdir/$b; done
+    ivstools --merge $newdir/* $DUMP_PATH/merged.cap
+	read -p "`gettext 'Select merged data as target? (y/N): '`" ACP && [[ "$ACP" = "y" ]] && Host_MAC="merged"
+}
 changedumppath(){
 	OLD_DUMP_PATH=$DUMP_PATH
 	read -p "`gettext 'Enter new path: '`" DUMP_PATH
@@ -923,14 +915,24 @@ function doauto {
 		autopwn
 }
 
-function autopwn(){
+function autopwn(){ 
+    F=0; export AUTO=1; export QUIET=1; export INTERACTIVE=0
+
     for i in $attack_functions; do
-        $i; sleep $autopwn_sleep; clean_processes; [[ check_if_worked ]] && break
+        $i & cleanp &
+        while [ "1" ]; do [[ "$F" == "1" ]] && break
+            sleep $autopwn_min_sleep; [[ check_if_worked ]] && auto; return
+        done
+        [[ check_if_worked ]] && auto; return
     done
+
+    export AUTO=0; export QUIET=0; export INTERACTIVE=1 
+
 }
 
+function cleanp(){ $F=1; sleep $autopwn_sleep && clean_processes; }  # TODO Check this
 function check_all_ivs(){
-    # FIXME check if sufficent ivs.
+    # FIXME check if sufficent ivs in $Host_MAC*.cap, might be convert them to ivs and merge them.
     echo
 }
 
@@ -1019,16 +1021,8 @@ testmac(){
 blankssid(){
 	while true; do
 		$clear
-		echo -e -n "`gettext '
-		+-----------------------------------+
-		|        Blank SSID detected        |
-		|     Do you want to in put one     |
-		|     1) Yes                        |
-		|     2) No                         |
-		+-----------------------------------+
-		Option: '`"
-		read yn
-		case $yn in
+        mkmenu "Blank SSID, enter manually?" "Yes" "No" 
+		read yn; case $yn in
 			1 ) Host_ssidinput ; break ;;
 			2 ) Host_SSID="" ; break ;;
 			* ) echo "unknown response. Try again" ;;
