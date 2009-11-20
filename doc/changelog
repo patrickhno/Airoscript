@@ -1,3 +1,35 @@
+Changelog for 1.0:
+- Fixed client selection menu 
+- External functions now works 
+- Fixed regex that breaked iw2200 
+- Fucking dos line endings in makefiles. 
+- Lots of minor changes 
+- Cosmetics on non-existant unstable functions 
+- Splitted some functions from menu here 
+- Code cosmetics on screen functions 
+- Cleaner menu code 
+- Refactoring on mac changer and cosmetics 
+- Even more cosmetics, converted all menus to new styles 
+- Little bugfix on menu 
+- More cosmetics, some debug bugfixes 
+- Little cosmetic on order of airoscript warn 
+- Little themes fix on conffile 
+- Cosmetics 
+- Added initial usage warning 
+- Minor fixes on config and screen functions 
+- Changed airoscript-ng.sh to airoscript-ng 
+- Splitted functions_internal from main functions file 
+- Some aspect changes 
+- Functions cleanup 
+- improved airopdate 
+- Refactorized external functions. Still untested. 
+- Makefile minor fixes. Prev was conf fix 
+- Some makefile minor fixes 
+- Converting to airoscript-ng and cleaning shit 
+- Some minor doc fixes 
+- Now it won't only check if wifi is empty, also if wifi is in form fooo0. 
+- Identified bug with iwl interfaces, waiting for feedback from reporter 
+
 Changelog for 2.2 
 - Updated licenses on all documents (closes: )
 - Bugfixes (lots) on airoscfunc.sh 
