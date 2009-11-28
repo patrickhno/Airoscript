@@ -102,7 +102,7 @@ install-locale: generate-locale
 	@echo "Installing locales"
 	@for i in $(srcdir)/locale/* ; do \
 		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
-			make -s -C $$i install locale="$(locale)" INSTALLDATA="$(INSTALLDATA)" ; \
+			make -s -C $$i install localedir="$(locale)" INSTALLDATA="$(INSTALLDATA)" ; \
 		fi ; \
 	done
 
@@ -130,7 +130,7 @@ uninstall-manpages:
 uninstall-locale:
 	@for i in $(srcdir)/locale/* ; do \
 		if [ -d $$i ] && [ $$i != "." ] && [ $$i != ".." ]; then \
-			make -s -C $$i uninstall locale=$(locale) ; \
+			make -s -C $$i uninstall localedir=$(locale) ; \
 		fi ; \
 	done
 	
