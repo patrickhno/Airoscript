@@ -1,6 +1,6 @@
 #!/usr/bin/make
 NAME="airoscript-ng"
-
+name=$(NAME)
 # Binary install programs
 INSTALL = install -c
 INSTALLDATA = install -c -m 644
