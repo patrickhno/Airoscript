@@ -24,7 +24,7 @@ execute(){
 		$CDCMD screen -S airoscript -c $SCREENRC -D -RR -X screen -t $title
 		$CDCMD screen -S airoscript -c $SCREENRC -X at "*" stuff "${@}"
     else
-        if [ $QUIET ] && [ $SCAN != 1 ]; then 
+        if [ "$QUIET" != "" ] && [ "$SCAN" != "1" ]; then 
             ${@} &> /dev/null &
         else
             $CDCMD $TERMINAL $HOLD $TITLEFLAG "$title" $TOPLEFTBIG $BGC $BACKGROUND_COLOR $FGC $DUMPING_COLOR $EXECFLAG "${@}";
@@ -38,7 +38,7 @@ save_pids(){
     for i in `get_childs $1`; do touch "/var/run/airoscript/$i"; done
 }
 
-get_childs(){echo $( ps axo ppid,pid|awk "/$1/ {print \$2}"|grep -v "$pid") } 
+get_childs(){ echo $( ps axo ppid,pid|awk "/$1/ {print \$2}"|grep -v "$pid"); } 
 clean_processes(){ for i in `ls /var/run/airoscript/`; do kill $i; done; }
 
 arrow(){ echo -e -n "\t\n||\t\n||\t\n\/"; }
@@ -49,7 +49,13 @@ fill(){
     fill_menu $loop_times 1 "$separator";echo -n "$title";fill_menu $loop_times 1 "$separator"
 }
 
-mkmenu(){ # TODO IMPLEMENT INDENTATION LEVELS.
+function mkbox(){   
+     echo -n "+"; fill "$menu_t" "$separator_h" "$(( $max + ${#menu_t} ))" center; echo "+"
+}
+mkmenu(){ 
+    # FIXME Implement divissions and No-numbered stuffs for submenus and so.
+    # FIXME This is creating messed up menus.
+    # TODO IMPLEMENT INDENTATION LEVELS.
     $clear
     separator="|"; menu_t=$1 && shift; n=0; max=1;
     for i in "${@}"; do if [ "${#i}" -gt "$max" ]; then max=${#i}; fi; done;
@@ -206,6 +212,7 @@ doexit(){
 		exit
 
 }
+function hardclean(){ rm -rf $DUMP_PATH/$Host_MAC*; }
 
 if [ "$UNSTABLE" = "1" ] && [ -e $UNSTABLEF ]; then . $UNSTABLEF; fi
 if [ "$EXTERNAL" = "1" ] && [ -e $EXTF ]; then . $EXTF; fi

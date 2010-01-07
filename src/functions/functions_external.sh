@@ -17,7 +17,6 @@
 #        along with this program; if not, write to the Free Software
 #        Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-echo "\tExternal functions from airoscript loaded,\n\tif you don't want this, set EXTERNAL=0 in\n\tconfig file"
 
 doitwld(){
 	$WLD $Host_MAC $Host_SSID $DUMP_PATH/wlddic 
@@ -46,6 +45,6 @@ jtd(){
 
 auto(){
     $AIROSCWORDLIST --filename $DUMP_PATH/$Host_MAC.dic -cf $CMPFILE -e $Host_SSID -m $Host_MAC;
-    [[ $? =! "404" ]] && $AIRCRACK -b $Host_MAC -w $DUMP_PATH/$Host_MAC.dic $DUMP_PATH/$Host_MAC-01.cap
-    [[ $? == "404" ]] && crack
+    if [ $? =! "404" ]; then $AIRCRACK -b $Host_MAC -w $DUMP_PATH/$Host_MAC.dic $DUMP_PATH/$Host_MAC-01.cap; fi
+        if [ $? == "404" ]; then crack; fi
 }

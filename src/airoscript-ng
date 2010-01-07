@@ -63,6 +63,12 @@ if [ -e ~/.airoscript-ng/airoscript-ng.conf ]; then
 		fi
 fi
 
+# Check cardctl
+if [ `uname -r|cut -d . -f 2` == "6" ]; then CARDCTL="pccardctl"
+else CARDCTL="cardctl"; fi
+# This is for auto resolution set.
+if [ "$reson" ]; then export resonset=1; fi
+
 cd $DUMP_PATH
 if [ "$1" != "" ] ; then export TERMINAL=$1; fi
 [[ -e $IFUNCTIONS ]] && . $IFUNCTIONS 
@@ -78,7 +84,7 @@ fi
 
 checkdir
 
-if [ $SHOW_airoscript_WARNING ]; then echo -e $warntext"\n"; fi
+if [ $SHOW_airoscript_WARNING ]; then echo -e $warntext"\n"; sleep 5; fi
 if [ "$TERMINAL" = "screen" ] ; then
 	if [ -e ~/.airoscript-ng/screen_has_started ]; then rm ~/.airoscript-ng-ng/screen_has_started
 	else
