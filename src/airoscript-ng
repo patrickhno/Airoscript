@@ -100,17 +100,19 @@ setinterface
 checkforcemac
 
 select choix in $CHOICES; do
-	if   [ "$choix" = "1"  ]; then choosetype
-	elif [ "$choix" = "2"  ]; then select_ap
-	elif [ "$choix" = "3"  ]; then witchattack
-	elif [ "$choix" = "4"  ]; then witchcrack
-	elif [ "$choix" = "5"  ]; then choosefake && menu
-	elif [ "$choix" = "6"  ]; then choosedeauth
-	elif [ "$choix" = "7"  ]; then optionmenu
-	elif [ "$choix" = "8"  ]; then injectmenu
-	elif [ "$choix" = "9"  ]; then doauto
-    elif [ "$choix" = "10" ]; then doexit
-	elif [ "$choix" = "11" ]; then if [ $UNSTABLE = "1" ]; then $clear && unstablemenu; fi
-	else $clear && echo "`gettext 'ERROR: Wrong number entered'`"; fi
+    case "$choix" in
+        1)choosetype;;
+        2)select_ap;;
+        3)witchattack;;
+        4)witchcrack;;
+        5)choosefake && menu ;;
+        6)choosedeauth;;
+        7)optionmenu;;
+        8)injectmenu;;
+        9)doauto;;
+        10)doexit;;
+        11)if [ $UNSTABLE = "1" ]; then $clear && unstablemenu; fi;;
+        *)$clear && echo "`gettext 'ERROR: Wrong number entered'`";;
+    esac
 menu
 done
